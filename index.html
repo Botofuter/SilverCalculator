@@ -1,4 +1,6 @@
 <style>
+/*有参考暖暖环游世界wiki https://nikkiup2u.huijiwiki.com/wiki/Html:Carddrawingplanner
+明日方舟一图流 https://ark.yituliu.cn/*/
     /* ===== 全局变量 & 基础 ===== */
     .core-planner-wrap {
         --main-base: #efefef;
@@ -383,14 +385,14 @@
             flex-direction: column;
         }
         .cp-layout-right {
-            position: static;
-            top: auto;
-            z-index: auto;
+            position: sticky;
+            top: 0;
+            z-index: 10;
             order: -1;
             width: 100%;
-            background: transparent;
-            padding-bottom: 0;
-            border-bottom: none;
+            background: var(--bg);
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         .cp-layout-left {
             margin-top: 8px;
@@ -601,6 +603,7 @@
                         <label class="cp-main-label"><input type="checkbox" id="cpCourseBuy" /> 购买核心课题（追加：银芯×120 / 无垢之芯×2）</label>
                         <label>剩余有效天数 <input type="number" id="cpCourseDays" min="0" value="28" style="width:60px;" /></label>
                         <span class="cp-tag" style="font-size:10px;">手动填写</span>
+                        <!-- 核心课题源液花费显示 -->
                         <span class="cp-tag" style="background:rgba(205,191,152,0.15);" id="cpCourseCostDisplay">源液花费：1280</span>
                     </div>
                     <div class="cp-hint" id="cpCourseHint">※ 在有效期内每日总收益变更为银芯×180、无垢之芯×3<br>勾选后自动计入1280源液花费（默认常规28天购买费用）<br>如预计购买更多，请前往氪金内容-课题纪录勾选</div>
@@ -822,6 +825,7 @@
                         <label class="cp-main-label">购买次数（源液1980/期）</label>
                         <input type="number" id="cpPreorderBuyCount" min="0" value="0" style="width:55px;" />
                     </div>
+                    <!-- 预购纪行冷却期显示（自定义） -->
                     <div id="cpPreorderCooldown" class="cp-cooldown-info" style="display:none;">
                         分期取得完毕 + 下次开启间隔：<b id="cpPreorderCooldownDays">40</b> 天
                         <label style="display:inline-flex; align-items:center; gap:4px; margin-left:12px; font-weight:normal; color:var(--main-base);">
@@ -849,7 +853,7 @@
                         <input type="number" id="cpDestinyBuyCount" min="0" value="0" style="width:55px;" />
                     </div>
 
-                    <!-- 三天弹窗 -->
+                    <!-- 三天弹窗（递进解锁） -->
                     <div class="cp-subgroup-title">调查补给礼盒（三日弹窗）</div>
                     <div class="cp-hint">按 60→120→180循环。输入数量后将自动排序。</div>
                     <div class="cp-row"><label class="cp-main-label">60档（60源液）：银芯×60、流明之芯×2、无垢之芯×1</label>
@@ -1065,7 +1069,7 @@
         $("cpCourseBuy").addEventListener("change", updateCourseCost);
         updateCourseCost();
 
-        // ===== 预购纪行冷却期计算 =====
+        // ===== 预购纪行冷却期计算（支持自定义） =====
         function updatePreorderCooldown() {
             var count = num("cpPreorderBuyCount");
             var cooldownEl = document.getElementById("cpPreorderCooldown");
@@ -1073,6 +1077,7 @@
             var customInput = document.getElementById("cpPreorderCooldownCustom");
             
             if (count > 0) {
+                // 读取自定义冷却期，默认40天
                 var customDays = parseFloat(customInput.value);
                 if (isNaN(customDays) || customDays < 0) customDays = 40;
                 cooldownEl.style.display = "block";
@@ -1210,6 +1215,7 @@
             ];
             var preorderQueue = [];
             var preorderBuyCount = config.preorderBuyCount || 0;
+            // 每次购买的跨度 = 40 + 自定义冷却期（从配置读取，默认40）
             var cooldownInterval = config.preorderCooldown || 40;
             for (var pi = 0; pi < preorderBuyCount; pi++) {
                 preorderQueue.push({ startOffset: pi * cooldownInterval, index: pi });
@@ -1245,7 +1251,8 @@
             var packMonthsEarned = 0;
 
             var secretCount = config.secretCount;
-            var secretAdv = config.secretAdvancedCount;
+            //var secretAdv = Math.min(config.secretAdvancedCount, secretCount);
+            var secretAdv = config.secretAdvancedCount; 
 
             var customTotalCost = 0;
             customs.forEach(function(c) { customTotalCost += c.cost || 0; });
@@ -1259,6 +1266,7 @@
                 st.monthlyCardCost = monthlyCardCost;
             }
 
+            // 核心课题花费
             if (config.hasCourse && config.maxCourseDays > 0) {
                 st.courseCost = 1280;
             }
@@ -1333,17 +1341,19 @@
                     }
                 }
 
+                // 修改为（在阶段1的 processInstantRewards 中）：
                 if (config.secretCount > 0) {
                     st.secretSilver += config.secretCount * 2000;
                     st.secretPure += config.secretCount * 40;
-                    st.secretActualCount = config.secretCount;
+                    st.secretActualCount = config.secretCount;  // 记录免费解锁数量
                 }
                 if (config.secretAdvancedCount > 0) {
-                    var actualAdv = config.secretAdvancedCount;
+                    var actualAdv = config.secretAdvancedCount;  // 直接使用填写的数量
                     st.secretAdvSilver += actualAdv * 2000;
                     st.secretAdvLumen += actualAdv * 40;
                     st.secretAdvActualCount = actualAdv;
                 }
+
 
                 if (config.lumenSupplyBuy) {
                     st.lumenSupplyLumen += 10;
@@ -1407,6 +1417,7 @@
 
             processInstantRewards();
 
+            // 检查目标是否已达成
             var currentSE = cSE + st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver +
                 st.trainSilver + st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen *
                     LUMEN_RATE) +
@@ -1487,16 +1498,23 @@
                     if (!pureDone) st.refreshPure += config.refreshPureCount;
                 }
 
+                // 活动开启逻辑（在按天模拟循环中）：
+                // 在 simulateTarget 函数中，找到活动开启的代码段（约在按天模拟循环中），替换为：
+
                 // ===== 活动开启逻辑 =====
                 var eventStartDay = config.eventStartDay1 ? 1 : 0;
 
+                // 按天模拟循环中（while 循环内）：
                 if (config.eventCountTotal > 0 && !config.eventInstant) {
+                    // 判断是否到了开启活动的日子
                     var shouldSpawn = false;
                     if (eventStartDay === 1) {
+                        // 从第1天开始：第1天先开一波，之后每 eventPeriod 天开一波
                         if (day === 1 || (day - 1) % config.eventPeriod === 0) {
                             shouldSpawn = true;
                         }
                     } else {
+                        // 原来的逻辑：从第 eventPeriod 天开始
                         if (day % config.eventPeriod === 0) {
                             shouldSpawn = true;
                         }
@@ -1517,6 +1535,7 @@
                                 purePerDay: claimDays > 0 ? 6 / claimDays : 0,
                                 isInstant: claimDays === 0
                             };
+                            // 如果是当天拿满，直接发放
                             if (evt.isInstant) {
                                 if (!seDone) {
                                     st.eventSilver += config.eventSilverSingle;
@@ -1524,6 +1543,7 @@
                                 }
                                 if (!pureDone) st.eventPure += 6;
                                 st.actualEvents++;
+                                // 记录活动详情
                                 st.eventDetails.push({
                                     index: st.actualEvents,
                                     day: day,
@@ -1550,6 +1570,8 @@
                     }
                 }
 
+
+                // 活动发放逻辑：
                 pendingEvents.forEach(function(ev, idx) {
                     if (ev.elapsed < ev.total) {
                         ev.elapsed++;
@@ -1568,6 +1590,7 @@
                             st.eventPure += ev.earnedPure - prevPure;
                         }
                         
+                        // 如果拿满了，记录最终获得的奖励
                         if (ev.elapsed === ev.total) {
                             var detail = st.eventDetails.find(function(d) { return d.isPending && d.index === (idx + 1); });
                             if (detail) {
@@ -1789,6 +1812,7 @@
 
             var trainStops = parseInt($("cpTrainValue").value, 10) || 0;
 
+            // 读取预购纪行冷却期自定义值
             var preorderCooldown = parseFloat(document.getElementById("cpPreorderCooldownCustom").value);
             if (isNaN(preorderCooldown) || preorderCooldown < 0) preorderCooldown = 40;
 
@@ -1839,7 +1863,7 @@
 
                 preorderCycles: num("cpPreorderCycles"),
                 preorderBuyCount: num("cpPreorderBuyCount"),
-                preorderCooldown: preorderCooldown,
+                preorderCooldown: preorderCooldown, 
                 destinyJoin: checked("cpDestinyJoin"),
                 destinyPeriod: $("cpDestinyPeriod").value,
                 destinyJoinPeriods: num("cpDestinyJoinPeriods"),
@@ -1873,6 +1897,7 @@
                 (config.bpAdvanced28 * 680) + (config.bpAdvanced14 * 680) +
                 (config.bpMaxed28 * 600) + (config.bpMaxed14 * 300);
 
+            // 加入核心课题花费
             if (config.hasCourse && config.maxCourseDays > 0) {
                 oneTimeCost += 1280;
             }
@@ -1880,6 +1905,11 @@
             var totalCost = oneTimeCost + res.stats.popupCost + res.stats.shopPackCost + res.stats.customCost +
                 res.stats.monthlyCardCost;
 
+            // ===== 判断目标是否存在 =====
+            var hasTargetSE = (tSilver > 0 || tLumen > 0);
+            var hasTargetPure = (tPure > 0);
+
+            // ===== 生成结果文字 =====
             var hasTargetSE = (tSilver > 0 || tLumen > 0);
             var hasTargetPure = (tPure > 0);
 
@@ -2088,6 +2118,11 @@
             }
 
             if (config.eventCountTotal > 0) {
+                var eventDetailStr = "";
+                var totalEventSilver = st.eventSilver + st.eventLumen * LUMEN_RATE;
+                var totalEventPure = st.eventPure;
+                
+                // 统计不同拿满天数的活动数量
                 var claimDayGroups = {};
                 st.eventDetails.forEach(function(d) {
                     var key = d.claimDays + "天拿满";
@@ -2102,7 +2137,7 @@
                 tableHTML += "<tr><td>预期活动·常规活动 (实际历经 <b>" + st.actualEvents + "</b> 个" + 
                     (config.eventConcurrent > 1 ? "，每次重叠" + config.eventConcurrent + "个" : "") +
                     (groupStr.length > 0 ? "，" + groupStr.join("、") : "") + 
-                    ")</td><td>" + fmt(st.eventSilver + st.eventLumen * LUMEN_RATE) + "</td><td>" + fmt(st.eventPure) + "</td></tr>";
+                    ")</td><td>" + fmt(totalEventSilver) + "</td><td>" + fmt(totalEventPure) + "</td></tr>";
             }
 
             if (st.codeSilver > 0 || st.codePure > 0) tableHTML += "<tr><td>兑换码收益</td><td>" + fmt(st.codeSilver) +
@@ -2232,11 +2267,13 @@
             tableHTML += "<tr><td>银芯换算流明之芯（每200银芯=1流明之芯）</td><td colspan='2'>合计银芯数量 " + fmt(totalEarnedSE) +
                 " ≈ 折算流明之芯 " + lumenEquivalent + " 个</td></tr>";
 
+            // 花费明细移动到表格最下方，不单独显示
             if (totalCost > 0) {
                 tableHTML += "<tr class='cp-cost'><td>预计花费源液（氪金部分合计）</td><td colspan='2'>" + fmt(totalCost) +
                     "</td></tr>";
             }
 
+            // 活动唤醒大保底预估（移到明细最下方，每行一个）
             tableHTML += "<tr><td colspan='3' style='padding:8px 6px; border-top:1px solid var(--a);'>" +
               "<span style='color:var(--a); font-weight:bold;'>活动唤醒大保底预估</span>（基于总流明之芯数量 " + lumenEquivalent + "）" +
               "</td></tr>";
@@ -2246,6 +2283,7 @@
 
             tableHTML += "</tbody></table>";
 
+            // ===== 折叠状态 =====
             var storageKey = 'cp_table_collapsed';
             var storedCollapsed = localStorage.getItem(storageKey);
             var isCollapsed = (storedCollapsed === 'true');
@@ -2271,7 +2309,6 @@
 
             $("cpResult").innerHTML = resultHTML;
 
-            // 重新绑定事件
             var toggle = document.getElementById("cpTableToggle");
             var container = document.getElementById("cpTableContainer");
             if (toggle && container) {
@@ -2330,7 +2367,6 @@
             $("cpNormalEventInstant").checked = false;
             $("cpNormalEventSilver").value = 900;
             $("cpEventPeriod").value = 28;
-            $("cpEventStartDay1").checked = false;
             $("cpEventClaimDays").value = 0;
             $("cpEventConcurrent").value = 1;
             $("cpJourneyEventPure").value = 0;
@@ -2354,6 +2390,7 @@
 
             $("cpPreorderCycles").value = 0;
             $("cpPreorderBuyCount").value = 0;
+            // 重置自定义冷却期
             document.getElementById("cpPreorderCooldownCustom").value = 40;
             $("cpDestinyJoin").checked = false;
             $("cpDestinyPeriod").value = "28";
@@ -2411,7 +2448,7 @@
         window.addEventListener("DOMContentLoaded", function() {
             clampBP();
             updateMonthlyCost();
-            updateCourseCost(); 
+            updateCourseCost();
             updatePreorderCooldown();
             document.getElementById("cpCalcBtnTop").addEventListener("click", calculate);
             document.getElementById("cpResetBtnTop").addEventListener("click", function() {
