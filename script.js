@@ -1003,8 +1003,8 @@
             var customTotalSE = 0;
             res.customs.forEach(function(c) { customTotalSE += c.earnedSE; });
             totalSE += customTotalSE;
-            silverHTML = "银芯与流明之芯：数据不足以在 " + MAX_DAY + " 天内达成目标。合计拥有预测：<b>" + fmt(totalSE) +
-                "</b> 银芯数量";
+            silverHTML = "银芯与流明之芯：按目前勾选的来源，或许要去抢劫德克斯特勋爵才能在 " + MAX_DAY + " 天（约10年）内达成目标。，请检查是否遗漏了产出来源，或适当调低目标。（合计拥有预测：<b>" + fmt(totalSE) +
+                "</b> 银芯数量）";
         } else {
             var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
                 res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
