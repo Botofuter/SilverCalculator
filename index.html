@@ -2,6 +2,33 @@
 /*有参考暖暖环游世界wiki https://nikkiup2u.huijiwiki.com/wiki/Html:Carddrawingplanner*/
 /*明日方舟一图流 https://ark.yituliu.cn/*/
     /* ===== 全局变量 & 基础 ===== */
+    /* ===== 滑动条 ===== */
+    ::-webkit-scrollbar {
+        width: 8px;  
+        height: 8px; 
+    }
+
+    /* 滚动条轨道*/
+    ::-webkit-scrollbar-track {
+        background: transparent; 
+    }
+
+    /* 滚动条滑块*/
+    ::-webkit-scrollbar-thumb {
+        background: rgba(240, 220, 160, 0.4); 
+        border-radius: 0px; 
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(240, 220, 160, 0); 
+    }
+
+    /* 火狐浏览器兼容补丁 */
+    html, body {
+        scrollbar-width: thin; 
+        scrollbar-color: rgba(240, 220, 160, 0.4) transparent; 
+    }
+
     .core-planner-wrap {
         --main-base: #efefef;
         --bg: #11111180;
