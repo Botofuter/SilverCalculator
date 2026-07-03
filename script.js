@@ -68,7 +68,7 @@
         var card = document.createElement("div");
         card.className = "cp-custom-card";
         card.innerHTML =
-            '<div class="cp-field-group input-name"><label>来源名称:</label><input type="text" placeholder="如:牢猫爆点、预购、节日…" style="width:100%;" /></div>' +
+            '<div class="cp-field-group input-name"><label>来源名称:</label><input type="text" placeholder="如:牢猫爆点银芯、节日…" style="width:100%;" /></div>' +
             '<div class="cp-field-group"><label>银芯:</label><input type="number" class="input-num" min="0" value="0" /></div>' +
             '<div class="cp-field-group"><label>流明之芯:</label><input type="number" class="input-num" min="0" value="0" /></div>' +
             '<div class="cp-field-group"><label>无垢之芯:</label><input type="number" class="input-num" min="0" value="0" /></div>' +
