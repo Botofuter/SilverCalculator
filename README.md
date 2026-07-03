@@ -1,0 +1,2 @@
+忘却前夜中文维基（https://morimens.huijiwiki.com/）小工具
+银芯计算器Ver.1.0
