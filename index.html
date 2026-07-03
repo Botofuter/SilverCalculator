@@ -1,0 +1,2425 @@
+<style>
+    /* ===== 全局变量 & 基础 ===== */
+    .core-planner-wrap {
+        --main-base: #efefef;
+        --bg: #11111180;
+        --bg-inner: #0C171E20;
+        --a: #CDBF98;
+        --sub-bg: #00000080;
+        --sub-a: #fff;
+        --modal: #0C171E;
+        --danger: #d98c8c;
+        --good: #9fcf9f;
+        color: var(--main-base);
+        padding: 16px 20px 24px;
+        max-width: 1600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    .core-planner-wrap * {
+        box-sizing: border-box;
+    }
+    .core-planner-wrap h2 {
+        padding-bottom: 10px;
+        margin-top: 0;
+        font-size: 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .core-planner-wrap h3 {
+        color: var(--a);
+        margin: 0 0 6px;
+        font-size: 15px;
+    }
+    .cp-instructions {
+        background: var(--bg-inner);
+        border-left: 3px solid var(--a);
+        padding: 8px 14px;
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+    .cp-instructions p {
+        margin: 4px 0;
+    }
+
+    /* ===== 两栏布局 (PC) ===== */
+    .cp-layout {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+    }
+    .cp-layout-left {
+        flex: 3;
+        min-width: 0;
+    }
+    .cp-layout-right {
+        flex: 2;
+        min-width: 0;
+        position: sticky;
+        top: 16px;
+        align-self: flex-start;
+    }
+
+    /* ===== 目标卡片 ===== */
+    .cp-targets {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+    .cp-target-card {
+        background: var(--sub-bg);
+        color: var(--sub-a);
+        padding: 12px 14px;
+        border: 1px solid var(--bg-inner);
+    }
+    .cp-target-card h4 {
+        margin: 0 0 8px 0;
+        color: var(--a);
+        font-size: 14px;
+    }
+    .cp-target-card label {
+        display: block;
+        font-size: 12px;
+        opacity: .85;
+        margin-top: 5px;
+    }
+    .cp-target-card input[type="number"] {
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 2px;
+    }
+
+    /* ===== details / 折叠面板 ===== */
+    .core-planner-wrap details {
+        background: var(--sub-bg);
+        color: var(--sub-a);
+        margin-bottom: 8px;
+        border: 1px solid var(--bg-inner);
+        overflow: hidden;
+    }
+    .core-planner-wrap summary {
+        cursor: pointer;
+        padding: 8px 14px;
+        font-weight: bold;
+        color: var(--a);
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+    }
+    .core-planner-wrap summary::-webkit-details-marker {
+        display: none;
+    }
+    .core-planner-wrap summary::after {
+        content: "▾";
+        transition: transform .15s;
+        font-size: 14px;
+    }
+    .core-planner-wrap details[open] summary::after {
+        transform: rotate(180deg);
+    }
+    .cp-body {
+        padding: 4px 14px 14px 14px;
+        font-size: 13px;
+    }
+    .cp-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        flex-wrap: wrap;
+    }
+    .cp-row:first-child {
+        border-top: none;
+    }
+    .cp-row label.cp-main-label {
+        flex: 1;
+        min-width: 180px;
+    }
+    .cp-row input[type="number"],
+    .cp-row select {
+        width: 80px;
+        background: var(--bg-inner);
+        color: var(--main-base);
+        border: 1px solid #555;
+        border-radius: 0;
+        padding: 3px 6px;
+    }
+    .cp-row select {
+        width: 200px;
+        color: #fff;
+        border: 1px solid var(--a) !important;
+        background: rgba(12, 23, 30, 0.9) !important;
+        cursor: pointer;
+        padding: 4px 8px;
+    }
+    .cp-row select option {
+        background-color: #1a1d23 !important;
+        color: #ffffff !important;
+        padding: 4px 6px;
+    }
+    .core-planner-wrap input[type="checkbox"] {
+        width: 15px;
+        height: 15px;
+        accent-color: var(--a);
+        vertical-align: middle;
+        margin-right: 4px;
+    }
+    .cp-tag {
+        font-size: 11px;
+        padding: 1px 6px;
+        background: var(--bg-inner);
+        color: var(--a);
+        white-space: nowrap;
+    }
+    .cp-hint {
+        font-size: 11px;
+        opacity: .65;
+        margin: 2px 0 8px 0;
+    }
+    .cp-subgroup-title {
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--a);
+        margin: 12px 0 2px 0;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.18);
+    }
+    .cp-subgroup-title.cp-subgroup-first {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+    }
+    .cp-hide {
+        display: none !important;
+    }
+
+    /* ===== 自定义来源 ===== */
+    #cpCustomContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 6px;
+        margin-bottom: 10px;
+    }
+    .cp-custom-card {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .cp-custom-card .cp-field-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .cp-custom-card .cp-field-group label {
+        font-size: 11px;
+        color: var(--a);
+        white-space: nowrap;
+    }
+    .cp-custom-card .input-name {
+        flex: 2;
+        min-width: 120px;
+    }
+    .cp-custom-card .input-name input {
+        width: 100%;
+        min-width: 80px;
+    }
+    .cp-custom-card .input-num {
+        width: 55px;
+    }
+    .cp-custom-card .input-delay {
+        width: 50px;
+    }
+    .cp-custom-card input[type="text"],
+    .cp-custom-card input[type="number"] {
+        background: var(--bg-inner);
+        color: var(--main-base);
+        border: 1px solid #555;
+        border-radius: 0;
+        padding: 2px 5px;
+        font-size: 12px;
+    }
+    .cp-add-btn,
+    .cp-remove-btn {
+        background: var(--bg-inner);
+        color: var(--main-base);
+        border: 1px solid var(--a);
+        border-radius: 0;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 2px 10px;
+    }
+    .cp-remove-btn {
+        color: var(--danger);
+        border-color: var(--danger);
+        margin-left: auto;
+    }
+
+    /* ===== 结果区 & 按钮 ===== */
+    .cp-result {
+        background: var(--sub-bg);
+        color: var(--sub-a);
+        padding: 16px 18px;
+        border: 1px solid var(--a);
+        margin-top: 0;
+    }
+    .cp-result h3 {
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+    .cp-result-headline {
+        font-size: 16px;
+        margin: 4px 0 12px 0;
+        padding: 8px 12px;
+        background: var(--bg-inner);
+    }
+    .cp-result-headline b {
+        color: var(--a);
+    }
+    .cp-breakdown-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+    .cp-breakdown-table th {
+        text-align: left;
+        color: var(--a);
+        border-bottom: 1px solid var(--bg-inner);
+        padding: 5px 6px;
+    }
+    .cp-breakdown-table td {
+        padding: 5px 6px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .cp-breakdown-table tr.cp-total td {
+        font-weight: bold;
+        color: var(--a);
+        border-top: 1px solid var(--a);
+    }
+    .cp-breakdown-table tr.cp-cost td {
+        color: var(--danger);
+    }
+    .cp-note {
+        font-size: 11px;
+        opacity: .7;
+        margin-top: 6px;
+    }
+    .cp-pity-line {
+        font-size: 13px;
+        margin: 8px 0 4px;
+        padding: 6px 10px;
+        background: var(--bg-inner);
+        border-left: 2px solid var(--a);
+    }
+    .cp-pity-line b {
+        color: var(--a);
+    }
+    /* 折叠控制 */
+    .cp-table-toggle {
+        display: inline-block;
+        background: var(--bg-inner);
+        color: var(--a);
+        border: 1px solid var(--a);
+        padding: 4px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-bottom: 8px;
+        border-radius: 0;
+    }
+    .cp-table-toggle:hover {
+        background: rgba(205, 191, 152, 0.15);
+    }
+    .cp-table-container.collapsed .cp-breakdown-table {
+        display: none;
+    }
+
+    /* 结果区内的按钮行 */
+    .cp-result-btn-row {
+        display: flex;
+        gap: 10px;
+        margin: 12px 0 8px;
+        flex-wrap: wrap;
+    }
+    .cp-result-btn-row button {
+        flex: 1;
+        min-width: 100px;
+        padding: 10px 16px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 0;
+        font-size: 14px;
+    }
+    .cp-result-btn-row .cp-calc-btn {
+        background: var(--a);
+        color: #1a1a1a;
+    }
+    .cp-result-btn-row .cp-calc-btn:hover {
+        opacity: .9;
+    }
+    .cp-result-btn-row .cp-reset-btn {
+        background: transparent;
+        color: var(--danger);
+        border: 1px solid var(--danger);
+    }
+    .cp-result-btn-row .cp-reset-btn:hover {
+        background: rgba(217, 140, 140, 0.12);
+    }
+
+    /* ===== 手机适配 ===== */
+    @media (max-width: 820px) {
+        .core-planner-wrap {
+            padding: 12px 10px;
+        }
+        .cp-layout {
+            flex-direction: column;
+        }
+        .cp-layout-right {
+            position: static;
+            top: auto;
+            z-index: auto;
+            order: -1;
+            width: 100%;
+            background: transparent;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .cp-layout-left {
+            margin-top: 8px;
+        }
+        .cp-targets {
+            grid-template-columns: 1fr 1fr;
+        }
+        .cp-row label.cp-main-label {
+            min-width: 140px;
+        }
+        .cp-row select {
+            width: 150px;
+        }
+        .cp-custom-card .input-name {
+            min-width: 80px;
+        }
+        .cp-table-toggle {
+            display: inline-block;
+        }
+        .cp-table-container.collapsed .cp-breakdown-table {
+            display: none;
+        }
+        .cp-table-container .cp-breakdown-table {
+            display: table;
+        }
+        .cp-result-btn-row {
+            flex-direction: column;
+        }
+        .cp-result-btn-row button {
+            min-width: unset;
+        }
+    }
+    @media (max-width: 480px) {
+        .cp-targets {
+            grid-template-columns: 1fr;
+        }
+        .cp-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .cp-row label.cp-main-label {
+            min-width: unset;
+        }
+        .cp-row select {
+            width: 100%;
+        }
+        .cp-custom-card {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .cp-custom-card .cp-field-group {
+            flex-wrap: wrap;
+        }
+        .cp-remove-btn {
+            margin-left: 0;
+        }
+    }
+
+    /* ===== 输入框焦点 ===== */
+    .core-planner-wrap input[type="number"]:focus,
+    .core-planner-wrap input[type="text"]:focus,
+    .core-planner-wrap select:focus {
+        border-color: #CDBF98 !important;
+        outline: none;
+    }
+
+    .cp-row .cp-label-sm {
+        font-size: 12px;
+        opacity: 0.7;
+    }
+    .cp-inline-flex {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .cp-bp-group {
+        border: 1px dashed rgba(255, 255, 255, 0.12);
+        padding: 8px 10px 6px;
+        margin-bottom: 8px;
+    }
+    .cp-bp-group .cp-row {
+        padding: 3px 0;
+    }
+    .cp-bp-group .cp-row:first-child {
+        border-top: none;
+    }
+    .cp-bp-group .cp-row label.cp-main-label {
+        min-width: 160px;
+    }
+
+    .cp-pack-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px 20px;
+        padding: 6px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .cp-pack-row:first-child {
+        border-top: none;
+    }
+    .cp-pack-row label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+    .cp-pack-row label input[type="number"] {
+        width: 50px;
+    }
+    .cp-pack-tag {
+        font-size: 11px;
+        color: var(--a);
+        opacity: 0.8;
+    }
+    .cp-sync-btn {
+        background: var(--bg-inner);
+        color: var(--a);
+        border: 1px solid var(--a);
+        border-radius: 0;
+        padding: 0 8px;
+        cursor: pointer;
+        font-size: 11px;
+        line-height: 22px;
+    }
+    .cp-sync-btn:hover {
+        background: rgba(205, 191, 152, 0.2);
+    }
+
+    /* 课题礼匣流明选择标签 */
+    .cp-gift-tag {
+        font-size: 11px;
+        color: var(--a);
+        background: rgba(205, 191, 152, 0.12);
+        padding: 0 8px;
+        border-radius: 0;
+        white-space: nowrap;
+    }
+
+    /* 预购纪行冷却期显示 */
+    .cp-cooldown-info {
+        font-size: 12px;
+        color: var(--a);
+        background: rgba(205, 191, 152, 0.08);
+        padding: 4px 10px;
+        border-left: 2px solid var(--a);
+        margin-top: 4px;
+    }
+    .cp-cooldown-info b {
+        color: #fff;
+    }
+</style>
+
+<div class="core-planner-wrap">
+
+    <!-- ===== 布局容器 ===== -->
+    <div class="cp-layout">
+
+        <!-- ===== 左栏：配置区 ===== -->
+        <div class="cp-layout-left">
+
+            <!-- 目标卡片 -->
+            <div class="cp-targets">
+                <div class="cp-target-card">
+                    <h4>银芯</h4>
+                    <label>目标数量 <input type="number" id="cpTargetSilver" min="0" value="0" /></label>
+                    <label>已有数量 <input type="number" id="cpCurrentSilver" min="0" value="0" /></label>
+                </div>
+                <div class="cp-target-card">
+                    <h4>流明之芯</h4>
+                    <label>目标数量 <input type="number" id="cpTargetLumen" min="0" value="0" /></label>
+                    <label>已有数量 <input type="number" id="cpCurrentLumen" min="0" value="0" /></label>
+                </div>
+                <div class="cp-target-card">
+                    <h4>无垢之芯</h4>
+                    <label>目标数量 <input type="number" id="cpTargetPure" min="0" value="0" /></label>
+                    <label>已有数量 <input type="number" id="cpCurrentPure" min="0" value="0" /></label>
+                </div>
+            </div>
+
+            <!-- 自定义修正值 -->
+            <details open>
+                <summary>自定义修正值</summary>
+                <div class="cp-body">
+                    <div class="cp-hint">可正可负，用于手动增减基础数值（扣掉已花费的，或补上遗漏的）</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">银芯修正 <input type="number" id="cpAdjustSilver" value="0" style="width:110px;" /></label>
+                        <label class="cp-main-label">流明之芯修正 <input type="number" id="cpAdjustLumen" value="0" style="width:110px;" /></label>
+                        <label class="cp-main-label">无垢之芯修正 <input type="number" id="cpAdjustPure" value="0" style="width:110px;" /></label>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 每日 -->
+            <details open>
+                <summary>每日</summary>
+                <div class="cp-body">
+                    <div class="cp-row">
+                        <label class="cp-main-label"><input type="checkbox" id="cpShop" checked /> 每日常规补助：银芯×20</label>
+                    </div>
+                    <div class="cp-row">
+                        <label class="cp-main-label"><input type="checkbox" id="cpDailyTrial" checked /> 密境课室-日常试训：银芯×60、无垢之芯×1</label>
+                    </div>
+                    <div class="cp-row" id="cpCourseRow">
+                        <label class="cp-main-label"><input type="checkbox" id="cpCourseBuy" /> 购买核心课题（追加：银芯×120 / 无垢之芯×2）</label>
+                        <label>剩余有效天数 <input type="number" id="cpCourseDays" min="0" value="28" style="width:60px;" /></label>
+                        <span class="cp-tag" style="font-size:10px;">手动填写</span>
+                        <span class="cp-tag" style="background:rgba(205,191,152,0.15);" id="cpCourseCostDisplay">源液花费：1280</span>
+                    </div>
+                    <div class="cp-hint" id="cpCourseHint">※ 在有效期内每日总收益变更为银芯×180、无垢之芯×3<br>勾选后自动计入1280源液花费（默认常规28天购买费用）<br>如预计购买更多，请前往氪金内容-课题纪录勾选</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label"><input type="checkbox" id="cpMonthlyCard" /> 购买月卡（300源液/30天，立即获得300银芯，之后每日200银芯）</label>
+                        <label>剩余有效天数 <input type="number" id="cpMonthlyCardDays" min="0" max="180" value="30" style="width:60px;" /></label>
+                        <span class="cp-tag" style="font-size:10px;">花费约 <span id="cpMonthlyCardCostDisplay">300</span> 源液</span>
+                    </div>
+                    <div class="cp-hint">※ 购买时立即获得300银芯，之后有效期内每天额外获得200银芯。</div>
+                </div>
+            </details>
+
+            <!-- 每周 -->
+            <details open>
+                <summary>每周（7天）</summary>
+                <div class="cp-body">
+                    <div class="cp-row">
+                        <label class="cp-main-label"><input type="checkbox" id="cpWeeklyTrial" checked /> 密境课室-周常试训：银芯×500、无垢之芯×10</label>
+                        <label><input type="checkbox" id="cpWeeklyInstant" /> 只计算一次</label>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 每两周 -->
+            <details open>
+                <summary>每两周（14天）</summary>
+                <div class="cp-body">
+                    <div class="cp-subgroup-title cp-subgroup-first">融灾禁区</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">累计特训值达到</label>
+                        <select id="cpTrainValue">
+                            <option value="0">完全不打(银芯×0)</option>
+                            <option value="1">50(银芯×100)</option>
+                            <option value="2">100(银芯×200)</option>
+                            <option value="3">150(银芯×300)</option>
+                            <option value="4">225(银芯×400)</option>
+                            <option value="5">250(银芯×500)</option>
+                            <option value="6">305(银芯×600)</option>
+                            <option value="7">310(银芯×700)</option>
+                            <option value="8">315(银芯×800)</option>
+                            <option value="9">320(银芯×900)</option>
+                            <option value="10" selected>325 (银芯×1000)</option>
+                        </select>
+                    </div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">预计能打多少次（14天/次，每次固定拿档位奖励）</label>
+                        <input type="number" id="cpTrainCount" min="0" value="0" style="width:60px;" />
+                    </div>
+                    <div class="cp-row">
+                        <label><input type="checkbox" id="cpTrainInstant" /> 立即计算全部</label>
+                    </div>
+                    <div class="cp-hint">※ 填写预计能打的次数，每次按所选档位发放奖励。</div>
+                </div>
+            </details>
+
+            <!-- 每四周 -->
+            <details open>
+                <summary>每四周（28天）</summary>
+                <div class="cp-body">
+                    <div class="cp-hint">※ 以下玩法在28天内获得一次固定奖励，填写预计经历的赛季数</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">◈ 幻梦深潜：银芯×250、无垢之芯×5</label>
+                        <label>预计赛季数 <input type="number" id="cpMode1Seasons" min="0" value="0" style="width:50px;" /></label>
+                        <label><input type="checkbox" id="cpMode1Instant" /> 立即计算全部</label>
+                    </div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">◈ 疾驰的欢愉专列：银芯×250、无垢之芯×5</label>
+                        <label>预计赛季数 <input type="number" id="cpMode2Seasons" min="0" value="0" style="width:50px;" /></label>
+                        <label><input type="checkbox" id="cpMode2Instant" /> 立即计算全部</label>
+                    </div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">◈ 相位对弈-预组模式：银芯×250、无垢之芯×5</label>
+                        <label>预计赛季数 <input type="number" id="cpMode3Seasons" min="0" value="0" style="width:50px;" /></label>
+                        <label><input type="checkbox" id="cpMode3Instant" /> 立即计算全部</label>
+                    </div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">◈ 相位对弈-轮选模式：银芯×250、无垢之芯×5</label>
+                        <label>预计赛季数 <input type="number" id="cpMode4Seasons" min="0" value="0" style="width:50px;" /></label>
+                        <label><input type="checkbox" id="cpMode4Instant" /> 立即计算全部</label>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 未来预期活动 -->
+            <details>
+                <summary>未来预期活动</summary>
+                <div class="cp-body">
+                    <div class="cp-subgroup-title cp-subgroup-first">常规活动（唤醒体活动）</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">预估活动总数量（防清零，可填大数）</label>
+                        <input type="number" id="cpNormalEventCount" min="0" value="0" style="width:60px;" />
+                        <label><input type="checkbox" id="cpNormalEventInstant" /> 立即计算全部</label>
+                    </div>
+                    <div class="cp-row">
+                      <label><input type="checkbox" id="cpEventStartDay1" /> 从第1天开始计算</label>
+                      <span class="cp-tag" style="font-size:10px;">勾选后活动从第1天起按周期开启</span>
+                  </div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">预估单个活动银芯奖励</label>
+                        <input type="number" id="cpNormalEventSilver" min="0" value="900" style="width:70px;" />
+                    </div>
+                    <div class="cp-hint">※ 每个活动固定提供：流明之芯×6、无垢之芯×6，银芯看情况写个预估。</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">平均多少天开启一个活动</label>
+                        <input type="number" id="cpEventPeriod" min="1" value="28" style="width:60px;" />
+                    </div>
+                    <div class="cp-hint">※ 默认28天。</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">每个活动几天拿满奖励</label>
+                        <input type="number" id="cpEventClaimDays" min="0" value="0" style="width:60px;" />
+                    </div>
+                    <div class="cp-hint">※ 0 或 不填 表示活动开启当天即可拿满。</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">同时进行的活动数量（重叠时 &gt;1）</label>
+                        <input type="number" id="cpEventConcurrent" min="1" value="1" style="width:60px;" />
+                    </div>
+
+                    <div class="cp-subgroup-title">纪行活动</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">纪行活动预估无垢之芯总量</label>
+                        <input type="number" id="cpJourneyEventPure" min="0" value="0" style="width:70px;" />
+                    </div>
+
+                    <div class="cp-subgroup-title">兑换码</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">兑换码数量（每个银芯×500、无垢之芯×5）</label>
+                        <input type="number" id="cpCodeCount" min="0" value="0" style="width:60px;" />
+                    </div>
+                    <div class="cp-hint">※ 一般来源于DC守密人达成礼，更多种类可填写自定义</div>
+                </div>
+            </details>
+
+            <!-- 每月1日刷新 -->
+            <details>
+                <summary>每月1日刷新</summary>
+                <div class="cp-body">
+                    <div class="cp-row">
+                        <label class="cp-main-label"><input type="checkbox" id="cpMonthlyRefresh" /> 弥萨格商店-沉淀兑换</label>
+                    </div>
+                    <div class="cp-row" id="cpRefreshRow" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+                        <label style="display:flex; align-items:center; gap:4px; white-space:nowrap;">
+                            流明之芯×<input type="number" id="cpRefreshLumenCount" min="0" max="5" value="5" style="width:45px;" />
+                            <span style="font-size:11px; opacity:0.6;">（上限5）</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:4px; white-space:nowrap;">
+                            无垢之芯×<input type="number" id="cpRefreshPureCount" min="0" max="5" value="5" style="width:45px;" />
+                            <span style="font-size:11px; opacity:0.6;">（上限5）</span>
+                        </label>
+                    </div>
+                    <div class="cp-hint">※ 每月1日刷新，每种各上限5个。</div>
+                </div>
+            </details>
+
+            <!-- 氪金内容 -->
+            <details>
+                <summary>氪金内容</summary>
+                <div class="cp-body">
+                    <div class="cp-hint cp-subgroup-first">※ 以下均为付费内容，勾选/填写后会一并计入最终产出与预计花费的源液。默认全部不参与。<br>适度消费，理性娱乐。</div>
+
+                    <!-- 课题纪录 -->
+                    <div class="cp-subgroup-title">课题纪录</div>
+                    <div class="cp-hint">普通课题免费提供无垢之芯×12/期；高级课题680源液/期，额外银芯×2500、流明之芯×12/期；核心课题额外+600源液/期（28天）或+300源液/期（14天），课题礼匣可选流明之芯×5。</div>
+
+                    <!-- 28天期 -->
+                    <div class="cp-bp-group">
+                        <div style="font-weight:bold; margin-bottom:4px; font-size:13px;">28天/期（常规）</div>
+                        <div class="cp-row">
+                            <label class="cp-main-label">课题总期数（每期无垢之芯×12）</label>
+                            <input type="number" id="cpBPNormal28" min="0" value="0" style="width:55px;" />
+                            <label style="margin-left:6px;"><input type="checkbox" id="cpBPInstant28" /> 立即计算全部</label>
+                        </div>
+                        <div class="cp-row">
+                            <label class="cp-main-label">解锁高级课题期数（680源液/期）</label>
+                            <input type="number" id="cpBPAdvanced28" min="0" value="0" style="width:55px;" />
+                        </div>
+                        <div class="cp-row">
+                            <label class="cp-main-label">解锁核心课题期数（额外+600源液/期）</label>
+                            <input type="number" id="cpBPMaxed28" min="0" value="0" style="width:55px;" />
+                        </div>
+                        <div class="cp-row">
+                            <label><input type="checkbox" id="cpBPMaxed28Gift" /> 课题礼匣</label>
+                            <span class="cp-gift-tag">选择流明之芯×5/期</span>
+                        </div>
+                    </div>
+
+                    <!-- 14天期 -->
+                    <details style="margin-bottom:6px; border-color:rgba(255,255,255,0.08);">
+                        <summary style="font-size:13px; padding:4px 8px;">&nbsp;14天/期（短周期）</summary>
+                        <div class="cp-bp-group" style="border-color:rgba(255,255,255,0.08); margin-top:4px;">
+                            <div class="cp-row">
+                                <label class="cp-main-label">课题总期数（每期无垢之芯×12）</label>
+                                <input type="number" id="cpBPNormal14" min="0" value="0" style="width:55px;" />
+                                <label style="margin-left:6px;"><input type="checkbox" id="cpBPInstant14" /> 立即计算全部</label>
+                            </div>
+                            <div class="cp-row">
+                                <label class="cp-main-label">解锁高级课题期数（680源液/期）</label>
+                                <input type="number" id="cpBPAdvanced14" min="0" value="0" style="width:55px;" />
+                            </div>
+                            <div class="cp-row">
+                                <label class="cp-main-label">解锁核心课题期数（额外+300源液/期）</label>
+                                <input type="number" id="cpBPMaxed14" min="0" value="0" style="width:55px;" />
+                            </div>
+                            <div class="cp-row">
+                                <label><input type="checkbox" id="cpBPMaxed14Gift" /> 课题礼匣</label>
+                                <span class="cp-gift-tag">选择流明之芯×5/期</span>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- 预购纪行 -->
+                    <div class="cp-subgroup-title">预购纪行</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">参与预购周期数（每个周期免费银芯×100）</label>
+                        <input type="number" id="cpPreorderCycles" min="0" value="0" style="width:55px;" />
+                        <span class="cp-tag">手动填写</span>
+                    </div>
+                    <div class="cp-hint">※ 每个预购开始时，可免费获得100银芯。<br>此处与下方独立填写，由于此处无论填几次都会一次性计算，也可以忽略不计。</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">购买次数（源液1980/期）</label>
+                        <input type="number" id="cpPreorderBuyCount" min="0" value="0" style="width:55px;" />
+                    </div>
+                    <div id="cpPreorderCooldown" class="cp-cooldown-info" style="display:none;">
+                        分期取得完毕 + 下次开启间隔：<b id="cpPreorderCooldownDays">40</b> 天
+                        <label style="display:inline-flex; align-items:center; gap:4px; margin-left:12px; font-weight:normal; color:var(--main-base);">
+                            自定义间隔：<input type="number" id="cpPreorderCooldownCustom" min="0" value="40" style="width:50px; background:var(--bg-inner); color:var(--main-base); border:1px solid #555; padding:2px 4px;" /> 天
+                        </label>
+                        <span style="font-size:10px; opacity:0.6; margin-left:6px;">（默认40天）</span>
+                    </div>
+                    <div class="cp-hint">※ 分期取得：立即2000银芯；约14/18/32日后各2000银芯+10流明之芯；约15/25/40日后各4000银芯。<br>此处默认40日内（只）会有一期，自定义天数则40+×日内一期。</div>
+
+                    <!-- 命轮纪行 -->
+                    <div class="cp-subgroup-title">命轮纪行</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label"><input type="checkbox" id="cpDestinyJoin" /> 参与命轮纪行任务（每个周期免费：无垢之芯×30）</label>
+                        <label>周期长度
+                            <select id="cpDestinyPeriod" style="width:80px;">
+                                <option value="14">14天</option>
+                                <option value="28" selected>28天</option>
+                            </select>
+                        </label>
+                        <label>周期数 <input type="number" id="cpDestinyJoinPeriods" min="0" value="0" style="width:50px;" /></label>
+                        <label><input type="checkbox" id="cpDestinyInstant" /> 立即计算全部</label>
+                    </div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">购买命轮纪行次数（源液1680/期，每个周期提供流明之芯×60）</label>
+                        <input type="number" id="cpDestinyBuyCount" min="0" value="0" style="width:55px;" />
+                    </div>
+
+                    <!-- 三天弹窗 -->
+                    <div class="cp-subgroup-title">调查补给礼盒（三日弹窗）</div>
+                    <div class="cp-hint">按 60→120→180循环。输入数量后将自动排序。</div>
+                    <div class="cp-row"><label class="cp-main-label">60档（60源液）：银芯×60、流明之芯×2、无垢之芯×1</label>
+                        <label>购买次数 <input type="number" id="cpPopup60Count" min="0" value="0" style="width:50px;" /></label>
+                    </div>
+                    <div class="cp-row"><label class="cp-main-label">120档（120源液）：银芯×120、流明之芯×4、无垢之芯×2</label>
+                        <label>购买次数 <input type="number" id="cpPopup120Count" min="0" value="0" style="width:50px;" /></label>
+                    </div>
+                    <div class="cp-row"><label class="cp-main-label">180档（180源液）：银芯×180、流明之芯×6、无垢之芯×3</label>
+                        <label>购买次数 <input type="number" id="cpPopup180Count" min="0" value="0" style="width:50px;" /></label>
+                    </div>
+                    <div class="cp-row"><label><input type="checkbox" id="cpPopupInstant" /> 立即计算（首次弹窗提前到第1天，之后每3天一次）</label></div>
+
+                    <!-- 商店常规礼包 -->
+                    <div class="cp-subgroup-title">商店常规礼包（每月1日刷新）</div>
+                    <div class="cp-pack-row">
+                        <label><input type="checkbox" id="cpShopPack1" /> Ⅰ档 888源液（流明之芯×20）</label>
+                        <label>购买月数 <input type="number" id="cpShopPack1Months" min="0" value="0" style="width:45px;" /></label>
+                        <span class="cp-pack-tag">每月限购1次</span>
+                    </div>
+                    <div class="cp-pack-row">
+                        <label><input type="checkbox" id="cpShopPack2" /> Ⅱ档 1888源液（流明之芯×40）</label>
+                        <label>购买月数 <input type="number" id="cpShopPack2Months" min="0" value="0" style="width:45px;" /></label>
+                        <span class="cp-pack-tag">每月限购1次</span>
+                    </div>
+                    <div class="cp-pack-row">
+                        <label><input type="checkbox" id="cpShopPack3" /> Ⅲ档 2888源液（流明之芯×60）</label>
+                        <label>购买月数 <input type="number" id="cpShopPack3Months" min="0" value="0" style="width:45px;" /></label>
+                        <span class="cp-pack-tag">每月限购1次</span>
+                    </div>
+                    <div class="cp-row">
+                        <label><input type="checkbox" id="cpShopPackInstant" /> 立即计算（首次提前到第1天，之后每30天一次）</label>
+                    </div>
+
+                    <!-- 守密纪行 -->
+                    <div class="cp-subgroup-title">守密纪行</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">预计能解锁数量（每个免费包含：无垢之芯×40、银芯×2000）</label>
+                        <input type="number" id="cpSecretCount" min="0" value="0" style="width:55px;" />
+                    </div>
+                    <div class="cp-row">
+                        <label class="cp-main-label">预计可购买纪行进阶数量（980源液，每个额外包含：流明之芯×40、银芯×2000）</label>
+                        <input type="number" id="cpSecretAdvancedCount" min="0" value="0" style="width:55px;" />
+                    </div>
+                    <div class="cp-hint">※ 纪行进阶数量和普通纪行分开计算。</div>
+
+                    <!-- 流明唤醒补给 -->
+                    <div class="cp-subgroup-title">流明唤醒补给</div>
+                    <div class="cp-row">
+                        <label class="cp-main-label"><input type="checkbox" id="cpLumenSupplyBuy" /> 购买（120源液，包含流明之芯×10，仅限一次）</label>
+                    </div>
+
+                </div>
+            </details>
+
+            <!-- 自定义来源 -->
+            <details>
+                <summary>自定义来源</summary>
+                <div class="cp-body">
+                    <div id="cpCustomContainer"></div>
+                    <button type="button" class="cp-add-btn" id="cpAddCustomRow">+ 添加一行</button>
+                    <div class="cp-hint" style="margin-top:8px;">※ “几天拿满”指收益完全到账所需天数，不足时按平均值计算；“源液花费”将计入总花费。</div>
+                </div>
+            </details>
+
+        </div>
+        <!-- /左栏 -->
+
+        <!-- ===== 右栏：结果区 ===== -->
+        <div class="cp-layout-right">
+            <div id="cpResult">
+                <div class="cp-result" style="border-color:var(--bg-inner);">
+                    <h3>计算结果</h3>
+                    <div style="opacity:0.6; font-size:13px;">点击下方按钮进行计算</div>
+                    <div class="cp-result-btn-row">
+                        <button class="cp-calc-btn" id="cpCalcBtnTop">开始计算</button>
+                        <button class="cp-reset-btn" id="cpResetBtnTop">全部重置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /布局 -->
+
+</div>
+
+<script>
+    (function() {
+        var LUMEN_RATE = 200;
+        var MAX_DAY = 3650;
+
+        function $(id) { return document.getElementById(id); }
+
+        function num(id) {
+            var v = parseFloat($(id).value);
+            return isNaN(v) || v < 0 ? 0 : v;
+        }
+
+        function numSigned(id) {
+            var v = parseFloat($(id).value);
+            return isNaN(v) ? 0 : v;
+        }
+
+        function checked(id) { return $(id).checked; }
+
+        // ===== 课题纪录数值限制 =====
+        function clampBP() {
+            var total28 = num("cpBPNormal28");
+            var adv28 = num("cpBPAdvanced28");
+            var max28 = num("cpBPMaxed28");
+            if (adv28 > total28) { $("cpBPAdvanced28").value = total28;
+                adv28 = total28; }
+            if (max28 > adv28) { $("cpBPMaxed28").value = adv28;
+                max28 = adv28; }
+            var total14 = num("cpBPNormal14");
+            var adv14 = num("cpBPAdvanced14");
+            var max14 = num("cpBPMaxed14");
+            if (adv14 > total14) { $("cpBPAdvanced14").value = total14;
+                adv14 = total14; }
+            if (max14 > adv14) { $("cpBPMaxed14").value = adv14;
+                max14 = adv14; }
+        }
+        ["cpBPNormal28", "cpBPAdvanced28", "cpBPMaxed28", "cpBPNormal14", "cpBPAdvanced14", "cpBPMaxed14"].forEach(
+        function(id) {
+            $(id).addEventListener("input", clampBP);
+            $(id).addEventListener("change", clampBP);
+        });
+
+        // ===== 每日试训与核心课题行可见性 =====
+        function toggleCourseVisibility() {
+            if (checked("cpDailyTrial")) {
+                $("cpCourseRow").classList.remove("cp-hide");
+                $("cpCourseHint").classList.remove("cp-hide");
+            } else {
+                $("cpCourseRow").classList.add("cp-hide");
+                $("cpCourseHint").classList.add("cp-hide");
+            }
+        }
+        $("cpDailyTrial").addEventListener("change", toggleCourseVisibility);
+        toggleCourseVisibility();
+
+        // ===== 每月刷新行可见性 =====
+        function toggleRefreshVisibility() {
+            if (checked("cpMonthlyRefresh")) {
+                $("cpRefreshRow").classList.remove("cp-hide");
+            } else {
+                $("cpRefreshRow").classList.add("cp-hide");
+            }
+        }
+        $("cpMonthlyRefresh").addEventListener("change", toggleRefreshVisibility);
+        toggleRefreshVisibility();
+
+        // ===== 自定义来源 =====
+        function addCustomRow() {
+            var card = document.createElement("div");
+            card.className = "cp-custom-card";
+            card.innerHTML =
+                '<div class="cp-field-group input-name"><label>来源名称:</label><input type="text" placeholder="如:牢猫爆点、预购、节日…" style="width:100%;" /></div>' +
+                '<div class="cp-field-group"><label>银芯:</label><input type="number" class="input-num" min="0" value="0" /></div>' +
+                '<div class="cp-field-group"><label>流明之芯:</label><input type="number" class="input-num" min="0" value="0" /></div>' +
+                '<div class="cp-field-group"><label>无垢之芯:</label><input type="number" class="input-num" min="0" value="0" /></div>' +
+                '<div class="cp-field-group"><label>几天拿满:</label><input type="number" class="input-delay" min="0" value="0" placeholder="0" /></div>' +
+                '<div class="cp-field-group"><label>源液花费:</label><input type="number" class="input-cost" min="0" value="0" style="width:55px;" /></div>' +
+                '<button type="button" class="cp-remove-btn">删除</button>';
+            card.querySelector(".cp-remove-btn").addEventListener("click", function() { card.remove(); });
+            $("cpCustomContainer").appendChild(card);
+        }
+        $("cpAddCustomRow").addEventListener("click", addCustomRow);
+
+        function readCustomRows() {
+            var cards = $("cpCustomContainer").querySelectorAll(".cp-custom-card");
+            var out = [];
+            var unnamedCount = 0;
+            cards.forEach(function(card) {
+                var inputs = card.querySelectorAll("input");
+                var rawName = inputs[0].value.trim();
+                var silver = parseFloat(inputs[1].value) || 0;
+                var lumen = parseFloat(inputs[2].value) || 0;
+                var pure = parseFloat(inputs[3].value) || 0;
+                var delay = parseFloat(inputs[4].value) || 0;
+                var cost = parseFloat(inputs[5].value) || 0;
+                if (silver || lumen || pure || delay || cost) {
+                    var name = rawName || ("自定义来源" + (++unnamedCount));
+                    out.push({ name: name, silver: silver, lumen: lumen, pure: pure, delay: delay,
+                        originDelay: delay, cost: cost });
+                }
+            });
+            return out;
+        }
+
+        // ===== 工具 =====
+        function fmt(n) {
+            if (Math.abs(n - Math.round(n)) < 0.001) return Math.round(n).toString();
+            return n.toFixed(1);
+        }
+
+        // ===== 动态更新月卡花费显示 =====
+        function updateMonthlyCost() {
+            var days = num("cpMonthlyCardDays");
+            var cost = 300 * Math.ceil(days / 30);
+            document.getElementById("cpMonthlyCardCostDisplay").textContent = cost;
+        }
+        document.getElementById("cpMonthlyCardDays").addEventListener("input", updateMonthlyCost);
+        document.getElementById("cpMonthlyCardDays").addEventListener("change", updateMonthlyCost);
+        updateMonthlyCost();
+
+        // ===== 核心课题源液花费显示 =====
+        function updateCourseCost() {
+            var cost = checked("cpCourseBuy") ? 1280 : 0;
+            document.getElementById("cpCourseCostDisplay").textContent = "源液花费：" + cost;
+        }
+        $("cpCourseBuy").addEventListener("change", updateCourseCost);
+        updateCourseCost();
+
+        // ===== 预购纪行冷却期计算 =====
+        function updatePreorderCooldown() {
+            var count = num("cpPreorderBuyCount");
+            var cooldownEl = document.getElementById("cpPreorderCooldown");
+            var daysEl = document.getElementById("cpPreorderCooldownDays");
+            var customInput = document.getElementById("cpPreorderCooldownCustom");
+            
+            if (count > 0) {
+                var customDays = parseFloat(customInput.value);
+                if (isNaN(customDays) || customDays < 0) customDays = 40;
+                cooldownEl.style.display = "block";
+                daysEl.textContent = customDays;
+            } else {
+                cooldownEl.style.display = "none";
+            }
+        }
+        $("cpPreorderBuyCount").addEventListener("input", updatePreorderCooldown);
+        $("cpPreorderBuyCount").addEventListener("change", updatePreorderCooldown);
+        document.getElementById("cpPreorderCooldownCustom").addEventListener("input", updatePreorderCooldown);
+        document.getElementById("cpPreorderCooldownCustom").addEventListener("change", updatePreorderCooldown);
+        updatePreorderCooldown();
+
+        // ================================================================
+        //  核心模拟函数
+        // ================================================================
+        function simulateTarget(tSE, cSE, tPure, cPure, config) {
+            var day = 0;
+            var maxDay = MAX_DAY;
+            var seDone = (tSE <= cSE);
+            var pureDone = (tPure <= cPure);
+            var reachedSE = seDone;
+            var reachedPure = pureDone;
+            var fDaySE = 0,
+                fDayPure = 0;
+
+            var st = {
+                shopSilver: 0,
+                dailyTrialSilver: 0,
+                dailyTrialPure: 0,
+                weeklySilver: 0,
+                weeklyPure: 0,
+                trainSilver: 0,
+                trainCountActual: 0,
+                modeSilver: 0,
+                modePure: 0,
+                modeCounts: { mode1: 0, mode2: 0, mode3: 0, mode4: 0 },
+                refreshSilver: 0,
+                refreshPure: 0,
+                monthlySilver: 0,
+                monthlyCardLumpSilver: 0,
+                codeSilver: 0,
+                codePure: 0,
+                journeyPure: 0,
+                actualEvents: 0,
+                eventDetails: [],
+                eventSilver: 0,
+                eventLumen: 0,
+                eventPure: 0,
+                bp28Silver: 0,
+                bp28Lumen: 0,
+                bp28Pure: 0,
+                bp28ActualCount: 0,
+                bp28ActualAdv: 0,
+                bp28ActualMax: 0,
+                bp14Silver: 0,
+                bp14Lumen: 0,
+                bp14Pure: 0,
+                bp14ActualCount: 0,
+                bp14ActualAdv: 0,
+                bp14ActualMax: 0,
+                preorderSilver: 0,
+                preorderLumen: 0,
+                preorderFreeSilver: 0,
+                preorderCyclesActual: 0,
+                destinyLumen: 0,
+                destinyPure: 0,
+                destinyCyclesActual: 0,
+                popupSilver: 0,
+                popupLumen: 0,
+                popupPure: 0,
+                popupCost: 0,
+                popupUsedDetail: [],
+                shopPackLumen: 0,
+                shopPackCost: 0,
+                shopPackUsedMonths: 0,
+                secretSilver: 0,
+                secretPure: 0,
+                secretActualCount: 0,
+                secretAdvSilver: 0,
+                secretAdvLumen: 0,
+                secretAdvActualCount: 0,
+                lumenSupplyLumen: 0,
+                customCost: 0,
+                monthlyCardCost: 0,
+                courseCost: 0
+            };
+
+            var customs = JSON.parse(JSON.stringify(config.customs));
+            customs.forEach(function(c) {
+                c.earnedSE = 0;
+                c.earnedPure = 0;
+                if (c.delay <= 0) {
+                    c.earnedSE = c.silver + c.lumen * LUMEN_RATE;
+                    c.earnedPure = c.pure;
+                    c.delay = -1;
+                }
+            });
+
+            var pendingEvents = [];
+            var eventClaimDays = config.eventClaimDays > 0 ? config.eventClaimDays : 1;
+            var spawnedEvents = 0;
+            var eventConcurrent = config.eventConcurrent > 0 ? Math.floor(config.eventConcurrent) : 1;
+            var eventInstantProcessed = false;
+
+            var modeDefs = [
+                { id: 'mode1', seasons: config.mode1Seasons, silver: 250, pure: 5, instant: config.mode1Instant },
+                { id: 'mode2', seasons: config.mode2Seasons, silver: 250, pure: 5, instant: config.mode2Instant },
+                { id: 'mode3', seasons: config.mode3Seasons, silver: 250, pure: 5, instant: config.mode3Instant },
+                { id: 'mode4', seasons: config.mode4Seasons, silver: 250, pure: 5, instant: config.mode4Instant }
+            ];
+
+            var bpNorm28 = config.bpNormal28;
+            var bpAdv28 = Math.min(config.bpAdvanced28, bpNorm28);
+            var bpMax28 = Math.min(config.bpMaxed28, bpAdv28);
+            var bpGift28 = config.bpGift28;
+
+            var bpNorm14 = config.bpNormal14;
+            var bpAdv14 = Math.min(config.bpAdvanced14, bpNorm14);
+            var bpMax14 = Math.min(config.bpMaxed14, bpAdv14);
+            var bpGift14 = config.bpGift14;
+
+            var bp28EarnedCount = 0;
+            var bp14EarnedCount = 0;
+
+            var preorderSchedule = [
+                { offset: 0, silver: 2000, lumen: 0 },
+                { offset: 14, silver: 2000, lumen: 10 },
+                { offset: 15, silver: 4000, lumen: 0 },
+                { offset: 18, silver: 2000, lumen: 10 },
+                { offset: 25, silver: 4000, lumen: 0 },
+                { offset: 32, silver: 2000, lumen: 10 },
+                { offset: 40, silver: 4000, lumen: 0 }
+            ];
+            var preorderQueue = [];
+            var preorderBuyCount = config.preorderBuyCount || 0;
+            var cooldownInterval = config.preorderCooldown || 40;
+            for (var pi = 0; pi < preorderBuyCount; pi++) {
+                preorderQueue.push({ startOffset: pi * cooldownInterval, index: pi });
+            }
+
+            var destinyPeriod = parseInt(config.destinyPeriod) || 28;
+            var destinyJoinPeriods = config.destinyJoinPeriods || 0;
+            var destinyBuyCount = config.destinyBuyCount || 0;
+            var destinyInstant = config.destinyInstant || false;
+
+            var popupQueue = [];
+            var c60 = config.popup60Count || 0;
+            var c120 = config.popup120Count || 0;
+            var c180 = config.popup180Count || 0;
+            while (c60 > 0 || c120 > 0 || c180 > 0) {
+                if (c60 > 0) { popupQueue.push('60');
+                    c60--; }
+                if (c120 > 0) { popupQueue.push('120');
+                    c120--; }
+                if (c180 > 0) { popupQueue.push('180');
+                    c180--; }
+            }
+            var popupQueueCopy = popupQueue.slice();
+
+            var pack1Months = config.shopPack1 ? Math.min(Math.floor(config.shopPack1Months || 0), 12) : 0;
+            var pack2Months = config.shopPack2 ? Math.min(Math.floor(config.shopPack2Months || 0), 12) : 0;
+            var pack3Months = config.shopPack3 ? Math.min(Math.floor(config.shopPack3Months || 0), 12) : 0;
+            var packLumenPerHit = (pack1Months > 0 ? 20 : 0) + (pack2Months > 0 ? 40 : 0) + (pack3Months > 0 ? 60 : 0);
+            var packCostPerHit = (pack1Months > 0 ? 888 : 0) + (pack2Months > 0 ? 1888 : 0) + (pack3Months > 0 ? 2888 :
+                0);
+            var packMonthsMax = Math.max(pack1Months, pack2Months, pack3Months);
+            var packActive = packLumenPerHit > 0 && packMonthsMax > 0;
+            var packMonthsEarned = 0;
+
+            var secretCount = config.secretCount;
+            var secretAdv = config.secretAdvancedCount;
+
+            var customTotalCost = 0;
+            customs.forEach(function(c) { customTotalCost += c.cost || 0; });
+
+            var preorderCycles = config.preorderCycles || 0;
+
+            var monthlyCardDays = config.hasMonthly ? config.maxMonthlyDays : 0;
+            var monthlyCardCost = 0;
+            if (config.hasMonthly && monthlyCardDays > 0) {
+                monthlyCardCost = 300 * Math.ceil(monthlyCardDays / 30);
+                st.monthlyCardCost = monthlyCardCost;
+            }
+
+            if (config.hasCourse && config.maxCourseDays > 0) {
+                st.courseCost = 1280;
+            }
+
+            var monthlyCardLumpGiven = false;
+
+            // =============================================================
+            // 阶段1: 处理所有「立即计算」的一次性收益
+            // =============================================================
+            function processInstantRewards() {
+                if (config.hasWeekly && config.weeklyInstant) {
+                    st.weeklySilver += 500;
+                    st.weeklyPure += 10;
+                }
+
+                if (config.trainSilverPerHit > 0 && config.trainCount > 0 && config.trainInstant) {
+                    st.trainSilver += config.trainSilverPerHit * config.trainCount;
+                    st.trainCountActual = config.trainCount;
+                }
+
+                modeDefs.forEach(function(m) {
+                    if (m.seasons > 0 && m.instant) {
+                        st.modeSilver += m.silver * m.seasons;
+                        st.modePure += m.pure * m.seasons;
+                        st.modeCounts[m.id] = (st.modeCounts[m.id] || 0) + m.seasons;
+                    }
+                });
+
+                if (config.eventCountTotal > 0 && config.eventInstant) {
+                    st.eventSilver += config.eventSilverSingle * config.eventCountTotal;
+                    st.eventLumen += 6 * config.eventCountTotal;
+                    st.eventPure += 6 * config.eventCountTotal;
+                    st.actualEvents = config.eventCountTotal;
+                    eventInstantProcessed = true;
+                }
+
+                if (config.bpInstant28 && bpNorm28 > 0) {
+                    st.bp28Pure += bpNorm28 * 12;
+                    st.bp28Silver += bpAdv28 * 2500;
+                    st.bp28Lumen += (bpAdv28 * 12);
+                    if (bpGift28 && bpMax28 > 0) {
+                        st.bp28Lumen += bpMax28 * 5;
+                    }
+                    bp28EarnedCount = bpNorm28;
+                    st.bp28ActualCount = bpNorm28;
+                    st.bp28ActualAdv = bpAdv28;
+                    st.bp28ActualMax = bpMax28;
+                }
+
+                if (config.bpInstant14 && bpNorm14 > 0) {
+                    st.bp14Pure += bpNorm14 * 12;
+                    st.bp14Silver += bpAdv14 * 2500;
+                    st.bp14Lumen += (bpAdv14 * 12);
+                    if (bpGift14 && bpMax14 > 0) {
+                        st.bp14Lumen += bpMax14 * 5;
+                    }
+                    bp14EarnedCount = bpNorm14;
+                    st.bp14ActualCount = bpNorm14;
+                    st.bp14ActualAdv = bpAdv14;
+                    st.bp14ActualMax = bpMax14;
+                }
+
+                if (destinyInstant) {
+                    if (destinyJoinPeriods > 0) {
+                        st.destinyPure += 30 * destinyJoinPeriods;
+                        st.destinyCyclesActual = destinyJoinPeriods;
+                    }
+                    if (destinyBuyCount > 0) {
+                        var maxPeriodsForBuy = Math.min(destinyBuyCount, destinyJoinPeriods || destinyBuyCount);
+                        st.destinyLumen += 60 * maxPeriodsForBuy;
+                        if (st.destinyCyclesActual === 0) st.destinyCyclesActual = maxPeriodsForBuy;
+                    }
+                }
+
+                if (config.secretCount > 0) {
+                    st.secretSilver += config.secretCount * 2000;
+                    st.secretPure += config.secretCount * 40;
+                    st.secretActualCount = config.secretCount;
+                }
+                if (config.secretAdvancedCount > 0) {
+                    var actualAdv = config.secretAdvancedCount;
+                    st.secretAdvSilver += actualAdv * 2000;
+                    st.secretAdvLumen += actualAdv * 40;
+                    st.secretAdvActualCount = actualAdv;
+                }
+
+                if (config.lumenSupplyBuy) {
+                    st.lumenSupplyLumen += 10;
+                }
+
+                st.codeSilver += config.codeCount * 500;
+                st.codePure += config.codeCount * 5;
+
+                st.preorderFreeSilver += preorderCycles * 100;
+                st.preorderCyclesActual = preorderCycles;
+
+                st.journeyPure += config.journeyPure;
+
+                if (config.popupInstant && popupQueueCopy.length > 0) {
+                    var tempQueue = popupQueueCopy.slice();
+                    tempQueue.forEach(function(tier) {
+                        var cost = 0,
+                            silver = 0,
+                            lumen = 0,
+                            pure = 0;
+                        if (tier === '60') { cost = 60;
+                            silver = 60;
+                            lumen = 2;
+                            pure = 1; }
+                        if (tier === '120') { cost = 120;
+                            silver = 120;
+                            lumen = 4;
+                            pure = 2; }
+                        if (tier === '180') { cost = 180;
+                            silver = 180;
+                            lumen = 6;
+                            pure = 3; }
+                        st.popupSilver += silver;
+                        st.popupLumen += lumen;
+                        st.popupPure += pure;
+                        st.popupCost += cost;
+                        st.popupUsedDetail.push(tier);
+                    });
+                    popupQueueCopy = [];
+                }
+
+                if (config.shopPackInstant && packActive && packMonthsMax > 0) {
+                    st.shopPackLumen += packLumenPerHit * packMonthsMax;
+                    st.shopPackCost += packCostPerHit * packMonthsMax;
+                    packMonthsEarned = packMonthsMax;
+                }
+
+                customs.forEach(function(c) {
+                    if (c.delay <= 0) {
+                        c.earnedSE = c.silver + c.lumen * LUMEN_RATE;
+                        c.earnedPure = c.pure;
+                    }
+                    st.customCost += (c.cost || 0);
+                });
+
+                if (config.hasMonthly && monthlyCardDays > 0) {
+                    st.monthlySilver += 300;
+                    monthlyCardLumpGiven = true;
+                }
+            }
+
+            processInstantRewards();
+
+            var currentSE = cSE + st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver +
+                st.trainSilver + st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen *
+                    LUMEN_RATE) +
+                st.codeSilver +
+                st.bp28Silver + (st.bp28Lumen * LUMEN_RATE) + st.bp14Silver + (st.bp14Lumen * LUMEN_RATE) +
+                st.preorderSilver + (st.preorderLumen * LUMEN_RATE) +
+                st.preorderFreeSilver +
+                (st.destinyLumen * LUMEN_RATE) +
+                st.popupSilver + (st.popupLumen * LUMEN_RATE) +
+                (st.shopPackLumen * LUMEN_RATE) +
+                st.secretSilver + st.secretAdvSilver + (st.secretAdvLumen * LUMEN_RATE) +
+                (st.lumenSupplyLumen * LUMEN_RATE);
+
+            var currentPure = cPure + st.dailyTrialPure + st.weeklyPure + st.modePure + st.refreshPure +
+                st.eventPure + st.codePure + st.journeyPure +
+                st.bp28Pure + st.bp14Pure +
+                st.destinyPure + st.popupPure + st.secretPure;
+
+            if (currentSE >= tSE) { seDone = true;
+                reachedSE = true;
+                fDaySE = 0; }
+            if (currentPure >= tPure) { pureDone = true;
+                reachedPure = true;
+                fDayPure = 0; }
+
+            if (seDone && pureDone) {
+                return { daySE: 0, dayPure: 0, stats: st, customs: customs };
+            }
+
+            // =============================================================
+            // 阶段2: 按天模拟
+            // =============================================================
+            while (day <= maxDay && (!seDone || !pureDone)) {
+                day++;
+
+                if (config.hasShop && !seDone) st.shopSilver += 20;
+
+                if (config.hasDaily) {
+                    if (!seDone) st.dailyTrialSilver += 60;
+                    if (!pureDone) st.dailyTrialPure += 1;
+                    if (config.hasCourse && day <= config.maxCourseDays) {
+                        if (!seDone) st.dailyTrialSilver += 120;
+                        if (!pureDone) st.dailyTrialPure += 2;
+                    }
+                }
+
+                if (config.hasMonthly && day <= config.maxMonthlyDays) {
+                    if (!seDone) st.monthlySilver += 200;
+                }
+
+                if (config.hasWeekly && !config.weeklyInstant) {
+                    if (day % 7 === 0) {
+                        if (!seDone) st.weeklySilver += 500;
+                        if (!pureDone) st.weeklyPure += 10;
+                    }
+                }
+
+                if (config.trainSilverPerHit > 0 && config.trainCount > 0 && !config.trainInstant) {
+                    if (day % 14 === 0 && (day / 14) <= config.trainCount) {
+                        if (!seDone) st.trainSilver += config.trainSilverPerHit;
+                        st.trainCountActual++;
+                    }
+                }
+
+                if (day % 28 === 0) {
+                    var seasonIndex = day / 28;
+                    modeDefs.forEach(function(m) {
+                        if (m.seasons > 0 && !m.instant && seasonIndex <= m.seasons) {
+                            if (!seDone) st.modeSilver += m.silver;
+                            if (!pureDone) st.modePure += m.pure;
+                            st.modeCounts[m.id] = (st.modeCounts[m.id] || 0) + 1;
+                        }
+                    });
+                }
+
+                if (config.hasRefresh && day % 30 === 0) {
+                    if (!seDone) st.refreshSilver += config.refreshLumenCount * LUMEN_RATE;
+                    if (!pureDone) st.refreshPure += config.refreshPureCount;
+                }
+
+                // ===== 活动开启逻辑 =====
+                var eventStartDay = config.eventStartDay1 ? 1 : 0;
+
+                if (config.eventCountTotal > 0 && !config.eventInstant) {
+                    var shouldSpawn = false;
+                    if (eventStartDay === 1) {
+                        if (day === 1 || (day - 1) % config.eventPeriod === 0) {
+                            shouldSpawn = true;
+                        }
+                    } else {
+                        if (day % config.eventPeriod === 0) {
+                            shouldSpawn = true;
+                        }
+                    }
+                    
+                    if (shouldSpawn && spawnedEvents < config.eventCountTotal) {
+                        var toSpawn = Math.min(eventConcurrent, config.eventCountTotal - spawnedEvents);
+                        for (var i = 0; i < toSpawn; i++) {
+                            var claimDays = config.eventClaimDays > 0 ? config.eventClaimDays : 0;
+                            var evt = {
+                                elapsed: 0,
+                                total: claimDays,
+                                earnedSilver: 0,
+                                earnedLumen: 0,
+                                earnedPure: 0,
+                                silverPerDay: claimDays > 0 ? config.eventSilverSingle / claimDays : 0,
+                                lumenPerDay: claimDays > 0 ? 6 / claimDays : 0,
+                                purePerDay: claimDays > 0 ? 6 / claimDays : 0,
+                                isInstant: claimDays === 0
+                            };
+                            if (evt.isInstant) {
+                                if (!seDone) {
+                                    st.eventSilver += config.eventSilverSingle;
+                                    st.eventLumen += 6;
+                                }
+                                if (!pureDone) st.eventPure += 6;
+                                st.actualEvents++;
+                                st.eventDetails.push({
+                                    index: st.actualEvents,
+                                    day: day,
+                                    claimDays: 0,
+                                    silver: config.eventSilverSingle,
+                                    lumen: 6,
+                                    pure: 6
+                                });
+                            } else {
+                                st.actualEvents++;
+                                pendingEvents.push(evt);
+                                st.eventDetails.push({
+                                    index: st.actualEvents,
+                                    day: day,
+                                    claimDays: claimDays,
+                                    silver: 0,
+                                    lumen: 0,
+                                    pure: 0,
+                                    isPending: true
+                                });
+                            }
+                        }
+                        spawnedEvents += toSpawn;
+                    }
+                }
+
+                pendingEvents.forEach(function(ev, idx) {
+                    if (ev.elapsed < ev.total) {
+                        ev.elapsed++;
+                        var prevSilver = ev.earnedSilver;
+                        var prevLumen = ev.earnedLumen;
+                        var prevPure = ev.earnedPure;
+                        
+                        if (!seDone) {
+                            ev.earnedSilver = Math.floor(ev.silverPerDay * ev.elapsed);
+                            ev.earnedLumen = Math.floor(ev.lumenPerDay * ev.elapsed);
+                            st.eventSilver += ev.earnedSilver - prevSilver;
+                            st.eventLumen += ev.earnedLumen - prevLumen;
+                        }
+                        if (!pureDone) {
+                            ev.earnedPure = Math.floor(ev.purePerDay * ev.elapsed);
+                            st.eventPure += ev.earnedPure - prevPure;
+                        }
+                        
+                        if (ev.elapsed === ev.total) {
+                            var detail = st.eventDetails.find(function(d) { return d.isPending && d.index === (idx + 1); });
+                            if (detail) {
+                                detail.silver = ev.earnedSilver;
+                                detail.lumen = ev.earnedLumen;
+                                detail.pure = ev.earnedPure;
+                                detail.isPending = false;
+                            }
+                        }
+                    }
+                });
+
+                customs.forEach(function(c) {
+                    if (c.delay > 0) {
+                        var elapsed = c.originDelay - c.delay + 1;
+                        if (!seDone) {
+                            var totalSE = c.silver + c.lumen * LUMEN_RATE;
+                            c.earnedSE = Math.floor(totalSE * elapsed / c.originDelay);
+                        }
+                        if (!pureDone) {
+                            c.earnedPure = Math.floor(c.pure * elapsed / c.originDelay);
+                        }
+                        c.delay--;
+                    }
+                });
+
+                if (!config.bpInstant28 && bpNorm28 > 0 && day % 28 === 1) {
+                    var curIdx28 = Math.floor(day / 28) + 1;
+                    if (curIdx28 <= bpNorm28) {
+                        bp28EarnedCount = curIdx28;
+                        if (!pureDone) st.bp28Pure += 12;
+                        if (curIdx28 <= bpAdv28 && !seDone) {
+                            st.bp28Silver += 2500;
+                            st.bp28Lumen += 12;
+                        }
+                        if (curIdx28 <= bpMax28 && !seDone && bpGift28) {
+                            st.bp28Lumen += 5;
+                        }
+                        st.bp28ActualCount = bp28EarnedCount;
+                        st.bp28ActualAdv = Math.min(bpAdv28, bp28EarnedCount);
+                        st.bp28ActualMax = Math.min(bpMax28, bp28EarnedCount);
+                    }
+                }
+
+                if (!config.bpInstant14 && bpNorm14 > 0 && day % 14 === 1) {
+                    var curIdx14 = Math.floor(day / 14) + 1;
+                    if (curIdx14 <= bpNorm14) {
+                        bp14EarnedCount = curIdx14;
+                        if (!pureDone) st.bp14Pure += 12;
+                        if (curIdx14 <= bpAdv14 && !seDone) {
+                            st.bp14Silver += 2500;
+                            st.bp14Lumen += 12;
+                        }
+                        if (curIdx14 <= bpMax14 && !seDone && bpGift14) {
+                            st.bp14Lumen += 5;
+                        }
+                        st.bp14ActualCount = bp14EarnedCount;
+                        st.bp14ActualAdv = Math.min(bpAdv14, bp14EarnedCount);
+                        st.bp14ActualMax = Math.min(bpMax14, bp14EarnedCount);
+                    }
+                }
+
+                if (!destinyInstant) {
+                    if (config.destinyJoin && destinyJoinPeriods > 0) {
+                        for (var p = 0; p < destinyJoinPeriods; p++) {
+                            var start = p * destinyPeriod + 1;
+                            if (day === start) {
+                                if (!pureDone) st.destinyPure += 30;
+                                st.destinyCyclesActual++;
+                            }
+                        }
+                    }
+                    if (destinyBuyCount > 0) {
+                        var maxPeriods = Math.min(destinyBuyCount, destinyJoinPeriods || destinyBuyCount);
+                        for (var p = 0; p < maxPeriods; p++) {
+                            var start = p * destinyPeriod + 1;
+                            if (day === start) {
+                                if (!seDone) st.destinyLumen += 60;
+                            }
+                        }
+                    }
+                }
+
+                if (popupQueueCopy.length > 0 && !config.popupInstant) {
+                    if (day % 3 === 0 && day > 0) {
+                        var tier = popupQueueCopy.shift();
+                        if (tier) {
+                            var cost = 0,
+                                silver = 0,
+                                lumen = 0,
+                                pure = 0;
+                            if (tier === '60') { cost = 60;
+                                silver = 60;
+                                lumen = 2;
+                                pure = 1; }
+                            if (tier === '120') { cost = 120;
+                                silver = 120;
+                                lumen = 4;
+                                pure = 2; }
+                            if (tier === '180') { cost = 180;
+                                silver = 180;
+                                lumen = 6;
+                                pure = 3; }
+                            if (!seDone) {
+                                st.popupSilver += silver;
+                                st.popupLumen += lumen;
+                            }
+                            if (!pureDone) st.popupPure += pure;
+                            st.popupCost += cost;
+                            st.popupUsedDetail.push(tier);
+                        }
+                    }
+                }
+
+                if (packActive && packMonthsEarned < packMonthsMax && !config.shopPackInstant) {
+                    if (day % 30 === 0 && day > 0) {
+                        if (!seDone) st.shopPackLumen += packLumenPerHit;
+                        st.shopPackCost += packCostPerHit;
+                        packMonthsEarned++;
+                    }
+                }
+
+                if (preorderQueue.length > 0) {
+                    var currentPreorder = preorderQueue[0];
+                    var startDay = 1 + currentPreorder.startOffset;
+                    if (!currentPreorder.triggeredIndex) currentPreorder.triggeredIndex = 0;
+                    while (currentPreorder.triggeredIndex < preorderSchedule.length) {
+                        var item = preorderSchedule[currentPreorder.triggeredIndex];
+                        var targetDay = startDay + item.offset;
+                        if (day >= targetDay && day <= targetDay) {
+                            if (!seDone) {
+                                st.preorderSilver += item.silver;
+                                st.preorderLumen += item.lumen;
+                            }
+                            currentPreorder.triggeredIndex++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (currentPreorder.triggeredIndex === preorderSchedule.length) {
+                        preorderQueue.shift();
+                    }
+                }
+
+                var currentSE2 = cSE + st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver +
+                    st.trainSilver + st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen *
+                        LUMEN_RATE) +
+                    st.codeSilver +
+                    st.bp28Silver + (st.bp28Lumen * LUMEN_RATE) + st.bp14Silver + (st.bp14Lumen * LUMEN_RATE) +
+                    st.preorderSilver + (st.preorderLumen * LUMEN_RATE) +
+                    st.preorderFreeSilver +
+                    (st.destinyLumen * LUMEN_RATE) +
+                    st.popupSilver + (st.popupLumen * LUMEN_RATE) +
+                    (st.shopPackLumen * LUMEN_RATE) +
+                    st.secretSilver + st.secretAdvSilver + (st.secretAdvLumen * LUMEN_RATE) +
+                    (st.lumenSupplyLumen * LUMEN_RATE);
+
+                var currentPure2 = cPure + st.dailyTrialPure + st.weeklyPure + st.modePure + st.refreshPure +
+                    st.eventPure + st.codePure + st.journeyPure +
+                    st.bp28Pure + st.bp14Pure +
+                    st.destinyPure + st.popupPure + st.secretPure;
+
+                var customSE = 0,
+                    customPure = 0;
+                customs.forEach(function(c) {
+                    customSE += c.earnedSE;
+                    customPure += c.earnedPure;
+                });
+                currentSE2 += customSE;
+                currentPure2 += customPure;
+
+                if (!seDone && currentSE2 >= tSE) {
+                    seDone = true;
+                    reachedSE = true;
+                    fDaySE = day;
+                }
+                if (!pureDone && currentPure2 >= tPure) {
+                    pureDone = true;
+                    reachedPure = true;
+                    fDayPure = day;
+                }
+            }
+
+            if (!reachedSE) fDaySE = -1;
+            if (!reachedPure) fDayPure = -1;
+
+            if (!config.bpInstant28) {
+                st.bp28ActualCount = bp28EarnedCount;
+                st.bp28ActualAdv = Math.min(bpAdv28, bp28EarnedCount);
+                st.bp28ActualMax = Math.min(bpMax28, bp28EarnedCount);
+            }
+            if (!config.bpInstant14) {
+                st.bp14ActualCount = bp14EarnedCount;
+                st.bp14ActualAdv = Math.min(bpAdv14, bp14EarnedCount);
+                st.bp14ActualMax = Math.min(bpMax14, bp14EarnedCount);
+            }
+
+            st.shopPackUsedMonths = packMonthsEarned;
+
+            return { daySE: fDaySE, dayPure: fDayPure, stats: st, customs: customs };
+        }
+
+        // ===== 计算入口 =====
+        function calculate() {
+            var tSilver = num("cpTargetSilver"),
+                cSilver = num("cpCurrentSilver");
+            var tLumen = num("cpTargetLumen"),
+                cLumen = num("cpCurrentLumen");
+            var tPure = num("cpTargetPure"),
+                cPure = num("cpCurrentPure");
+
+            var adjustSilver = numSigned("cpAdjustSilver");
+            var adjustLumen = numSigned("cpAdjustLumen");
+            var adjustPure = numSigned("cpAdjustPure");
+
+            var targetSE = tSilver + tLumen * LUMEN_RATE;
+            var currentSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE;
+            var currentPureWithAdjust = cPure + adjustPure;
+
+            var trainStops = parseInt($("cpTrainValue").value, 10) || 0;
+
+            var preorderCooldown = parseFloat(document.getElementById("cpPreorderCooldownCustom").value);
+            if (isNaN(preorderCooldown) || preorderCooldown < 0) preorderCooldown = 40;
+
+            var config = {
+                hasShop: checked("cpShop"),
+                hasDaily: checked("cpDailyTrial"),
+                hasCourse: checked("cpCourseBuy"),
+                maxCourseDays: num("cpCourseDays"),
+                hasMonthly: checked("cpMonthlyCard"),
+                maxMonthlyDays: num("cpMonthlyCardDays"),
+                hasWeekly: checked("cpWeeklyTrial"),
+                weeklyInstant: checked("cpWeeklyInstant"),
+                trainSilverPerHit: trainStops * 100,
+                trainCount: num("cpTrainCount"),
+                trainInstant: checked("cpTrainInstant"),
+                mode1Seasons: num("cpMode1Seasons"),
+                mode1Instant: checked("cpMode1Instant"),
+                mode2Seasons: num("cpMode2Seasons"),
+                mode2Instant: checked("cpMode2Instant"),
+                mode3Seasons: num("cpMode3Seasons"),
+                mode3Instant: checked("cpMode3Instant"),
+                mode4Seasons: num("cpMode4Seasons"),
+                mode4Instant: checked("cpMode4Instant"),
+                hasRefresh: checked("cpMonthlyRefresh"),
+                refreshLumenCount: num("cpRefreshLumenCount"),
+                refreshPureCount: num("cpRefreshPureCount"),
+                eventCountTotal: num("cpNormalEventCount"),
+                eventInstant: checked("cpNormalEventInstant"),
+                eventSilverSingle: num("cpNormalEventSilver"),
+                eventPeriod: num("cpEventPeriod") || 28,
+                eventStartDay1: checked("cpEventStartDay1"),
+                eventClaimDays: num("cpEventClaimDays"),
+                eventConcurrent: num("cpEventConcurrent") || 1,
+                journeyPure: num("cpJourneyEventPure"),
+                codeCount: num("cpCodeCount"),
+
+                bpNormal28: num("cpBPNormal28"),
+                bpAdvanced28: num("cpBPAdvanced28"),
+                bpMaxed28: num("cpBPMaxed28"),
+                bpInstant28: checked("cpBPInstant28"),
+                bpGift28: checked("cpBPMaxed28Gift"),
+
+                bpNormal14: num("cpBPNormal14"),
+                bpAdvanced14: num("cpBPAdvanced14"),
+                bpMaxed14: num("cpBPMaxed14"),
+                bpInstant14: checked("cpBPInstant14"),
+                bpGift14: checked("cpBPMaxed14Gift"),
+
+                preorderCycles: num("cpPreorderCycles"),
+                preorderBuyCount: num("cpPreorderBuyCount"),
+                preorderCooldown: preorderCooldown,
+                destinyJoin: checked("cpDestinyJoin"),
+                destinyPeriod: $("cpDestinyPeriod").value,
+                destinyJoinPeriods: num("cpDestinyJoinPeriods"),
+                destinyBuyCount: num("cpDestinyBuyCount"),
+                destinyInstant: checked("cpDestinyInstant"),
+                popup60Count: num("cpPopup60Count"),
+                popup120Count: num("cpPopup120Count"),
+                popup180Count: num("cpPopup180Count"),
+                popupInstant: checked("cpPopupInstant"),
+                shopPack1: checked("cpShopPack1"),
+                shopPack1Months: num("cpShopPack1Months"),
+                shopPack2: checked("cpShopPack2"),
+                shopPack2Months: num("cpShopPack2Months"),
+                shopPack3: checked("cpShopPack3"),
+                shopPack3Months: num("cpShopPack3Months"),
+                shopPackInstant: checked("cpShopPackInstant"),
+                secretCount: num("cpSecretCount"),
+                secretAdvancedCount: num("cpSecretAdvancedCount"),
+                lumenSupplyBuy: checked("cpLumenSupplyBuy"),
+
+                customs: readCustomRows()
+            };
+
+            var res = simulateTarget(targetSE, currentSE, tPure, currentPureWithAdjust, config);
+
+            var oneTimeCost =
+                (config.preorderBuyCount > 0 ? config.preorderBuyCount * 1980 : 0) +
+                (config.destinyBuyCount > 0 ? config.destinyBuyCount * 1680 : 0) +
+                (config.lumenSupplyBuy ? 120 : 0) +
+                (config.secretAdvancedCount * 980) +
+                (config.bpAdvanced28 * 680) + (config.bpAdvanced14 * 680) +
+                (config.bpMaxed28 * 600) + (config.bpMaxed14 * 300);
+
+            if (config.hasCourse && config.maxCourseDays > 0) {
+                oneTimeCost += 1280;
+            }
+
+            var totalCost = oneTimeCost + res.stats.popupCost + res.stats.shopPackCost + res.stats.customCost +
+                res.stats.monthlyCardCost;
+
+            var hasTargetSE = (tSilver > 0 || tLumen > 0);
+            var hasTargetPure = (tPure > 0);
+
+            var silverHTML;
+            if (!hasTargetSE) {
+                var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
+                    res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
+                    res.stats.weeklySilver + res.stats.trainSilver + res.stats.modeSilver +
+                    res.stats.refreshSilver + res.stats.eventSilver + (res.stats.eventLumen * LUMEN_RATE) +
+                    res.stats.codeSilver +
+                    res.stats.bp28Silver + (res.stats.bp28Lumen * LUMEN_RATE) +
+                    res.stats.bp14Silver + (res.stats.bp14Lumen * LUMEN_RATE) +
+                    res.stats.preorderSilver + (res.stats.preorderLumen * LUMEN_RATE) +
+                    res.stats.preorderFreeSilver +
+                    (res.stats.destinyLumen * LUMEN_RATE) +
+                    res.stats.popupSilver + (res.stats.popupLumen * LUMEN_RATE) +
+                    (res.stats.shopPackLumen * LUMEN_RATE) +
+                    res.stats.secretSilver + res.stats.secretAdvSilver + (res.stats.secretAdvLumen * LUMEN_RATE) +
+                    (res.stats.lumenSupplyLumen * LUMEN_RATE);
+                var customTotalSE = 0;
+                res.customs.forEach(function(c) { customTotalSE += c.earnedSE; });
+                totalSE += customTotalSE;
+
+                var totalLumenEq = Math.floor(totalSE / LUMEN_RATE);
+                silverHTML = "银芯/流明之芯（未设目标）：合计拥有预测 <b>" + fmt(totalSE) + "</b> 银芯数量（约 <b>" + totalLumenEq +
+                    "</b> 流明之芯）";
+            } else if (res.daySE === 0) {
+                var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
+                    res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
+                    res.stats.weeklySilver + res.stats.trainSilver + res.stats.modeSilver +
+                    res.stats.refreshSilver + res.stats.eventSilver + (res.stats.eventLumen * LUMEN_RATE) +
+                    res.stats.codeSilver +
+                    res.stats.bp28Silver + (res.stats.bp28Lumen * LUMEN_RATE) +
+                    res.stats.bp14Silver + (res.stats.bp14Lumen * LUMEN_RATE) +
+                    res.stats.preorderSilver + (res.stats.preorderLumen * LUMEN_RATE) +
+                    res.stats.preorderFreeSilver +
+                    (res.stats.destinyLumen * LUMEN_RATE) +
+                    res.stats.popupSilver + (res.stats.popupLumen * LUMEN_RATE) +
+                    (res.stats.shopPackLumen * LUMEN_RATE) +
+                    res.stats.secretSilver + res.stats.secretAdvSilver + (res.stats.secretAdvLumen * LUMEN_RATE) +
+                    (res.stats.lumenSupplyLumen * LUMEN_RATE);
+                var customTotalSE = 0;
+                res.customs.forEach(function(c) { customTotalSE += c.earnedSE; });
+                totalSE += customTotalSE;
+                silverHTML = "银芯与流明之芯：<b>已有足够数量</b>！合计拥有预测：<b>" + fmt(totalSE) + "</b> 银芯数量";
+            } else if (res.daySE === -1) {
+                var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
+                    res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
+                    res.stats.weeklySilver + res.stats.trainSilver + res.stats.modeSilver +
+                    res.stats.refreshSilver + res.stats.eventSilver + (res.stats.eventLumen * LUMEN_RATE) +
+                    res.stats.codeSilver +
+                    res.stats.bp28Silver + (res.stats.bp28Lumen * LUMEN_RATE) +
+                    res.stats.bp14Silver + (res.stats.bp14Lumen * LUMEN_RATE) +
+                    res.stats.preorderSilver + (res.stats.preorderLumen * LUMEN_RATE) +
+                    res.stats.preorderFreeSilver +
+                    (res.stats.destinyLumen * LUMEN_RATE) +
+                    res.stats.popupSilver + (res.stats.popupLumen * LUMEN_RATE) +
+                    (res.stats.shopPackLumen * LUMEN_RATE) +
+                    res.stats.secretSilver + res.stats.secretAdvSilver + (res.stats.secretAdvLumen * LUMEN_RATE) +
+                    (res.stats.lumenSupplyLumen * LUMEN_RATE);
+                var customTotalSE = 0;
+                res.customs.forEach(function(c) { customTotalSE += c.earnedSE; });
+                totalSE += customTotalSE;
+                silverHTML = "银芯与流明之芯：数据不足以在 " + MAX_DAY + " 天内达成目标。合计拥有预测：<b>" + fmt(totalSE) +
+                    "</b> 银芯数量";
+            } else {
+                var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
+                    res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
+                    res.stats.weeklySilver + res.stats.trainSilver + res.stats.modeSilver +
+                    res.stats.refreshSilver + res.stats.eventSilver + (res.stats.eventLumen * LUMEN_RATE) +
+                    res.stats.codeSilver +
+                    res.stats.bp28Silver + (res.stats.bp28Lumen * LUMEN_RATE) +
+                    res.stats.bp14Silver + (res.stats.bp14Lumen * LUMEN_RATE) +
+                    res.stats.preorderSilver + (res.stats.preorderLumen * LUMEN_RATE) +
+                    res.stats.preorderFreeSilver +
+                    (res.stats.destinyLumen * LUMEN_RATE) +
+                    res.stats.popupSilver + (res.stats.popupLumen * LUMEN_RATE) +
+                    (res.stats.shopPackLumen * LUMEN_RATE) +
+                    res.stats.secretSilver + res.stats.secretAdvSilver + (res.stats.secretAdvLumen * LUMEN_RATE) +
+                    (res.stats.lumenSupplyLumen * LUMEN_RATE);
+                var customTotalSE = 0;
+                res.customs.forEach(function(c) { customTotalSE += c.earnedSE; });
+                totalSE += customTotalSE;
+                silverHTML = "达成银芯/流明之芯目标还需 <b>" + res.daySE + "</b> 天（合计拥有预测 <b>" + fmt(totalSE) +
+                    "</b> 银芯数量）";
+            }
+
+            var pureHTML;
+            if (!hasTargetPure) {
+                var totalPure = cPure + adjustPure + res.stats.dailyTrialPure + res.stats.weeklyPure +
+                    res.stats.modePure + res.stats.refreshPure + res.stats.eventPure + res.stats.codePure +
+                    res.stats.journeyPure + res.stats.bp28Pure + res.stats.bp14Pure + res.stats.destinyPure +
+                    res.stats.popupPure + res.stats.secretPure;
+                var customTotalPure = 0;
+                res.customs.forEach(function(c) { customTotalPure += c.earnedPure; });
+                totalPure += customTotalPure;
+                pureHTML = "无垢之芯（未设目标）：合计拥有预测 <b>" + fmt(totalPure) + "</b> 个";
+            } else if (res.dayPure === 0) {
+                var totalPure = cPure + adjustPure + res.stats.dailyTrialPure + res.stats.weeklyPure +
+                    res.stats.modePure + res.stats.refreshPure + res.stats.eventPure + res.stats.codePure +
+                    res.stats.journeyPure + res.stats.bp28Pure + res.stats.bp14Pure + res.stats.destinyPure +
+                    res.stats.popupPure + res.stats.secretPure;
+                var customTotalPure = 0;
+                res.customs.forEach(function(c) { customTotalPure += c.earnedPure; });
+                totalPure += customTotalPure;
+                pureHTML = "无垢之芯：<b>已有足够数量</b>！合计拥有预测：<b>" + fmt(totalPure) + "</b> 个";
+            } else if (res.dayPure === -1) {
+                var totalPure = cPure + adjustPure + res.stats.dailyTrialPure + res.stats.weeklyPure +
+                    res.stats.modePure + res.stats.refreshPure + res.stats.eventPure + res.stats.codePure +
+                    res.stats.journeyPure + res.stats.bp28Pure + res.stats.bp14Pure + res.stats.destinyPure +
+                    res.stats.popupPure + res.stats.secretPure;
+                var customTotalPure = 0;
+                res.customs.forEach(function(c) { customTotalPure += c.earnedPure; });
+                totalPure += customTotalPure;
+                pureHTML = "无垢之芯：按目前勾选的来源，或许要去抢劫德克斯特勋爵才能在 " + MAX_DAY + " 天（约10年）内达成目标，请检查是否遗漏了产出来源，或适当调低目标。（合计拥有预测 <b>" +
+                    fmt(totalPure) + "</b> 个）";
+            } else {
+                var totalPure = cPure + adjustPure + res.stats.dailyTrialPure + res.stats.weeklyPure +
+                    res.stats.modePure + res.stats.refreshPure + res.stats.eventPure + res.stats.codePure +
+                    res.stats.journeyPure + res.stats.bp28Pure + res.stats.bp14Pure + res.stats.destinyPure +
+                    res.stats.popupPure + res.stats.secretPure;
+                var customTotalPure = 0;
+                res.customs.forEach(function(c) { customTotalPure += c.earnedPure; });
+                totalPure += customTotalPure;
+                pureHTML = "无垢之芯目标还需 <b>" + res.dayPure + "</b> 天（合计拥有预测 <b>" + fmt(totalPure) + "</b> 个）";
+            }
+            
+            var st = res.stats;
+
+            var finalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
+                st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver + st.trainSilver +
+                st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen * LUMEN_RATE) +
+                st.codeSilver +
+                st.bp28Silver + (st.bp28Lumen * LUMEN_RATE) + st.bp14Silver + (st.bp14Lumen * LUMEN_RATE) +
+                st.preorderSilver + (st.preorderLumen * LUMEN_RATE) +
+                st.preorderFreeSilver +
+                (st.destinyLumen * LUMEN_RATE) +
+                st.popupSilver + (st.popupLumen * LUMEN_RATE) +
+                (st.shopPackLumen * LUMEN_RATE) +
+                st.secretSilver + st.secretAdvSilver + (st.secretAdvLumen * LUMEN_RATE) +
+                (st.lumenSupplyLumen * LUMEN_RATE);
+            var finalPure = cPure + adjustPure + st.dailyTrialPure + st.weeklyPure + st.modePure + st.refreshPure +
+                st.eventPure + st.codePure + st.journeyPure +
+                st.bp28Pure + st.bp14Pure +
+                st.destinyPure + st.popupPure + st.secretPure;
+
+            var remainSE = finalSE - targetSE;
+            var remainPure = finalPure - tPure;
+            var remainLumen = Math.floor(remainSE / LUMEN_RATE);
+
+            var totalLumenEquivalent = Math.floor(finalSE / LUMEN_RATE);
+            var pityAwaken = Math.floor(totalLumenEquivalent / 90);
+            var pityWheel = Math.floor(totalLumenEquivalent / 60);
+
+            var tableHTML =
+                "<table class='cp-breakdown-table'><thead><tr><th>收益来源渠道</th><th>提供银芯(含流明折算)</th><th>提供无垢之芯</th></tr></thead><tbody>";
+            tableHTML += "<tr><td>当前已有数量 (初始计入)</td><td>" + fmt(cSilver + cLumen * LUMEN_RATE) + "</td><td>" +
+                fmt(cPure) + "</td></tr>";
+            if (adjustSilver !== 0 || adjustLumen !== 0 || adjustPure !== 0) {
+                tableHTML += "<tr><td>自定义修正值</td><td>" + fmt(adjustSilver + adjustLumen * LUMEN_RATE) +
+                    "</td><td>" + fmt(adjustPure) + "</td></tr>";
+            }
+
+            if (st.shopSilver > 0) tableHTML +=
+                "<tr><td>每日·商店每日常规补助</td><td>" + fmt(st.shopSilver) + "</td><td>0</td></tr>";
+
+            if (st.dailyTrialSilver > 0 || st.dailyTrialPure > 0) {
+                var activatedCourseDays = Math.min(res.daySE > 0 ? res.daySE : 0, config.maxCourseDays);
+                var courseTip = (config.hasCourse && config.hasDaily) ? "(含核心课题 " + activatedCourseDays + " 天加成)" :
+                    "";
+                tableHTML += "<tr><td>每日·日常试训 " + courseTip + "</td><td>" + fmt(st.dailyTrialSilver) +
+                    "</td><td>" + fmt(st.dailyTrialPure) + "</td></tr>";
+            }
+
+            if (st.monthlySilver > 0) {
+                var monthlyDays = Math.min(res.daySE > 0 ? res.daySE : 0, config.maxMonthlyDays);
+                var monthlyCostStr = st.monthlyCardCost > 0 ? " (花费 " + fmt(st.monthlyCardCost) + " 源液)" : "";
+                tableHTML += "<tr><td>每日·月卡（购买）" + monthlyCostStr + " (有效 " + monthlyDays + " 天)</td><td>" + fmt(st
+                    .monthlySilver) + "</td><td>0</td></tr>";
+            }
+            if (st.weeklySilver > 0 || st.weeklyPure > 0) {
+                var weeklyLabel = config.weeklyInstant ? "(只计算一次)" : "(每周重置)";
+                tableHTML += "<tr><td>每周·周常试训奖励 " + weeklyLabel + "</td><td>" + fmt(st.weeklySilver) +
+                    "</td><td>" + fmt(st.weeklyPure) + "</td></tr>";
+            }
+            if (st.trainSilver > 0) {
+                var trainLabel = config.trainInstant ? "(立即计入所有次数)" : "(每14天重置，历经 " + st.trainCountActual + " 次)";
+                tableHTML += "<tr><td>14天·融灾禁区特训档位奖励 " + trainLabel + "</td><td>" + fmt(st.trainSilver) +
+                    "</td><td>0</td></tr>";
+            }
+            if (st.modeSilver > 0 || st.modePure > 0) {
+                var modeParts = [];
+                if (config.mode1Seasons > 0) modeParts.push("幻梦深潜×" + st.modeCounts.mode1);
+                if (config.mode2Seasons > 0) modeParts.push("欢愉专列×" + st.modeCounts.mode2);
+                if (config.mode3Seasons > 0) modeParts.push("预组×" + st.modeCounts.mode3);
+                if (config.mode4Seasons > 0) modeParts.push("轮选×" + st.modeCounts.mode4);
+                var modeLabel = modeParts.length ? " (实际历经 " + modeParts.join(", ") + ")" : "";
+                tableHTML += "<tr><td>28天·轮换玩法产出 " + modeLabel + "</td><td>" + fmt(st.modeSilver) +
+                    "</td><td>" + fmt(st.modePure) + "</td></tr>";
+            }
+            if (st.refreshSilver > 0 || st.refreshPure > 0) {
+                var refreshLabel = "每月1日·商城沉淀兑换 (流明之芯×" + config.refreshLumenCount + " / 无垢之芯×" + config
+                    .refreshPureCount + ")";
+                tableHTML += "<tr><td>" + refreshLabel + "</td><td>" + fmt(st.refreshSilver) + "</td><td>" + fmt(
+                    st.refreshPure) + "</td></tr>";
+            }
+
+            if (config.eventCountTotal > 0) {
+                var claimDayGroups = {};
+                st.eventDetails.forEach(function(d) {
+                    var key = d.claimDays + "天拿满";
+                    if (!claimDayGroups[key]) claimDayGroups[key] = 0;
+                    claimDayGroups[key]++;
+                });
+                var groupStr = [];
+                for (var k in claimDayGroups) {
+                    groupStr.push(claimDayGroups[k] + "个(" + k + ")");
+                }
+                
+                tableHTML += "<tr><td>预期活动·常规活动 (实际历经 <b>" + st.actualEvents + "</b> 个" + 
+                    (config.eventConcurrent > 1 ? "，每次重叠" + config.eventConcurrent + "个" : "") +
+                    (groupStr.length > 0 ? "，" + groupStr.join("、") : "") + 
+                    ")</td><td>" + fmt(st.eventSilver + st.eventLumen * LUMEN_RATE) + "</td><td>" + fmt(st.eventPure) + "</td></tr>";
+            }
+
+            if (st.codeSilver > 0 || st.codePure > 0) tableHTML += "<tr><td>兑换码收益</td><td>" + fmt(st.codeSilver) +
+                "</td><td>" + fmt(st.codePure) + "</td></tr>";
+            if (st.journeyPure > 0) tableHTML += "<tr><td>纪行无垢之芯总量</td><td>0</td><td>" + fmt(st.journeyPure) +
+                "</td></tr>";
+
+            if (st.bp28Silver > 0 || st.bp28Lumen > 0 || st.bp28Pure > 0) {
+                var bpDesc28 = config.bpInstant28 ? "课题纪录 28天/期 (立即计入)" : "课题纪录 28天/期 (实际经历 " + st
+                    .bp28ActualCount + " 期";
+                if (!config.bpInstant28) {
+                    bpDesc28 += "，含高级 " + st.bp28ActualAdv + " 期，核心 " + st.bp28ActualMax + " 期)";
+                }
+                var totalBPSE28 = st.bp28Silver + (st.bp28Lumen * LUMEN_RATE);
+                tableHTML += "<tr><td>" + bpDesc28 + "</td><td>" + fmt(totalBPSE28) + "</td><td>" + fmt(st.bp28Pure) +
+                    "</td></tr>";
+            }
+            if (st.bp14Silver > 0 || st.bp14Lumen > 0 || st.bp14Pure > 0) {
+                var bpDesc14 = config.bpInstant14 ? "课题纪录 14天/期 (立即计入)" : "课题纪录 14天/期 (实际经历 " + st
+                    .bp14ActualCount + " 期";
+                if (!config.bpInstant14) {
+                    bpDesc14 += "，含高级 " + st.bp14ActualAdv + " 期，核心 " + st.bp14ActualMax + " 期)";
+                }
+                var totalBPSE14 = st.bp14Silver + (st.bp14Lumen * LUMEN_RATE);
+                tableHTML += "<tr><td>" + bpDesc14 + "</td><td>" + fmt(totalBPSE14) + "</td><td>" + fmt(st.bp14Pure) +
+                    "</td></tr>";
+            }
+
+            if (st.preorderFreeSilver > 0) {
+                tableHTML += "<tr><td>预购纪行·免费附赠 (历经 " + st.preorderCyclesActual + " 个周期)</td><td>" + fmt(st
+                    .preorderFreeSilver) + "</td><td>0</td></tr>";
+            }
+            if (st.preorderSilver > 0 || st.preorderLumen > 0) {
+                tableHTML += "<tr><td>氪金·预购纪行 " + (config.preorderBuyCount > 0 ? "(购买 " + config.preorderBuyCount +
+                    " 次，每次跨度 " + config.preorderCooldown + " 天)" : "") + "</td><td>" + fmt(st.preorderSilver + st.preorderLumen *
+                    LUMEN_RATE) + "</td><td>0</td></tr>";
+            }
+            if (st.destinyLumen > 0 || st.destinyPure > 0) {
+                var destinyLabel = "";
+                if (config.destinyInstant) destinyLabel = "(立即结算)";
+                else if (config.destinyJoin && config.destinyBuyCount > 0) destinyLabel = "(免费任务 " + st
+                    .destinyCyclesActual + " 周期 + 购买 " + config.destinyBuyCount + " 次)";
+                else if (config.destinyJoin) destinyLabel = "(免费任务 " + st.destinyCyclesActual + " 周期)";
+                else if (config.destinyBuyCount > 0) destinyLabel = "(购买 " + config.destinyBuyCount + " 次)";
+                tableHTML += "<tr><td>氪金·命轮纪行 " + destinyLabel + "</td><td>" + fmt(st.destinyLumen * LUMEN_RATE) +
+                    "</td><td>" + fmt(st.destinyPure) + "</td></tr>";
+            }
+            if (st.popupSilver > 0 || st.popupLumen > 0 || st.popupPure > 0) {
+                var popupDetail = [];
+                var count60 = st.popupUsedDetail.filter(function(t) { return t === '60'; }).length;
+                var count120 = st.popupUsedDetail.filter(function(t) { return t === '120'; }).length;
+                var count180 = st.popupUsedDetail.filter(function(t) { return t === '180'; }).length;
+                if (count60 > 0) popupDetail.push("60档×" + count60);
+                if (count120 > 0) popupDetail.push("120档×" + count120);
+                if (count180 > 0) popupDetail.push("180档×" + count180);
+                var popupLabel = popupDetail.length ? " (顺序购买 " + popupDetail.join(", ") + ")" : "";
+                tableHTML += "<tr><td>氪金·三天弹窗" + popupLabel + "</td><td>" + fmt(st.popupSilver + st
+                    .popupLumen * LUMEN_RATE) + "</td><td>" + fmt(st.popupPure) + "</td></tr>";
+            }
+            if (st.shopPackLumen > 0) {
+                var packDetail = [];
+                if (config.shopPack1Months > 0) packDetail.push("Ⅰ档×" + config.shopPack1Months + "月");
+                if (config.shopPack2Months > 0) packDetail.push("Ⅱ档×" + config.shopPack2Months + "月");
+                if (config.shopPack3Months > 0) packDetail.push("Ⅲ档×" + config.shopPack3Months + "月");
+                var packLabel = packDetail.length ? " (" + packDetail.join(", ") + ")" : "";
+                tableHTML += "<tr><td>氪金·商店常规礼包" + packLabel + "</td><td>" + fmt(st.shopPackLumen * LUMEN_RATE) +
+                    "</td><td>0</td></tr>";
+            }
+            if (st.secretSilver > 0 || st.secretPure > 0) {
+                tableHTML += "<tr><td>守密纪行·免费解锁（" + st.secretActualCount + " 个）</td><td>" + fmt(st.secretSilver) +
+                    "</td><td>" + fmt(st.secretPure) + "</td></tr>";
+            }
+            if (st.secretAdvSilver > 0 || st.secretAdvLumen > 0) {
+                tableHTML += "<tr><td>守密纪行·进阶购买（" + st.secretAdvActualCount + " 个，980源液/个）</td><td>" + fmt(st.secretAdvSilver + st.secretAdvLumen * LUMEN_RATE) +
+                    "</td><td>0</td></tr>";
+            }
+            
+            if (st.lumenSupplyLumen > 0) {
+                tableHTML += "<tr><td>氪金·流明唤醒补给</td><td>" + fmt(st.lumenSupplyLumen * LUMEN_RATE) +
+                    "</td><td>0</td></tr>";
+            }
+
+            var totalCustomSE = 0,
+                totalCustomPure = 0;
+            res.customs.forEach(function(c) {
+                if (c.earnedSE > 0 || c.earnedPure > 0 || c.cost > 0) {
+                    var costStr = c.cost > 0 ? " (花费" + fmt(c.cost) + "源液)" : "";
+                    tableHTML += "<tr><td>自定义·" + c.name + costStr + "</td><td>" + fmt(c.earnedSE) + "</td><td>" +
+                        fmt(c.earnedPure) + "</td></tr>";
+                    totalCustomSE += c.earnedSE;
+                    totalCustomPure += c.earnedPure;
+                }
+            });
+
+            var totalBPSETotal = st.bp28Silver + (st.bp28Lumen * LUMEN_RATE) + st.bp14Silver + (st.bp14Lumen *
+                LUMEN_RATE);
+            var totalBPPureTotal = st.bp28Pure + st.bp14Pure;
+
+            var totalPaidSE = st.preorderSilver + (st.preorderLumen * LUMEN_RATE) + (st.destinyLumen * LUMEN_RATE) +
+                st.popupSilver + (st.popupLumen * LUMEN_RATE) + (st.shopPackLumen * LUMEN_RATE) +
+                st.secretSilver + st.secretAdvSilver + (st.secretAdvLumen * LUMEN_RATE) +
+                (st.lumenSupplyLumen * LUMEN_RATE);
+            var totalPaidPure = st.destinyPure + st.popupPure + st.secretPure;
+
+            var totalEarnedSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
+                st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver + st.trainSilver +
+                st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen * LUMEN_RATE) +
+                totalCustomSE + st.codeSilver + totalBPSETotal + totalPaidSE +
+                st.preorderFreeSilver;
+            var totalEarnedPure = cPure + adjustPure + st.dailyTrialPure + st.weeklyPure + st.modePure +
+                st.refreshPure + st.eventPure + totalCustomPure + st.codePure + st.journeyPure +
+                totalBPPureTotal + totalPaidPure;
+
+            tableHTML += "<tr class='cp-total'><td>合计拥有预测</td><td>" + fmt(totalEarnedSE) + (hasTargetSE ?
+                " (目标 " + targetSE + ")" : "") + "</td><td>" + fmt(totalEarnedPure) + (hasTargetPure ?
+                " (目标 " + tPure + ")" : "") + "</td></tr>";
+
+            if (hasTargetSE && hasTargetPure) {
+                var remainSEStr = remainSE >= 0 ? fmt(remainSE) : "不足";
+                var remainPureStr = remainPure >= 0 ? fmt(remainPure) : "不足";
+                var remainLumenStr = remainLumen >= 0 ? fmt(remainLumen) : "不足";
+                tableHTML += "<tr><td>达成目标后剩余资源（银芯数量 / 无垢之芯）</td><td>" + remainSEStr + " (≈" + remainLumenStr +
+                    "流明)</td><td>" + remainPureStr + "</td></tr>";
+            }
+
+            var lumenEquivalent = Math.floor(totalEarnedSE / LUMEN_RATE);
+            tableHTML += "<tr><td>银芯换算流明之芯（每200银芯=1流明之芯）</td><td colspan='2'>合计银芯数量 " + fmt(totalEarnedSE) +
+                " ≈ 折算流明之芯 " + lumenEquivalent + " 个</td></tr>";
+
+            if (totalCost > 0) {
+                tableHTML += "<tr class='cp-cost'><td>预计花费源液（氪金部分合计）</td><td colspan='2'>" + fmt(totalCost) +
+                    "</td></tr>";
+            }
+
+            tableHTML += "<tr><td colspan='3' style='padding:8px 6px; border-top:1px solid var(--a);'>" +
+              "<span style='color:var(--a); font-weight:bold;'>活动唤醒大保底预估</span>（基于总流明之芯数量 " + lumenEquivalent + "）" +
+              "</td></tr>";
+            tableHTML += "<tr><td colspan='3' style='padding:2px 6px 2px 20px;'>• 唤醒体（90/次）：可保底 <b>" + pityAwaken + "</b> 次</td></tr>";
+            tableHTML += "<tr><td colspan='3' style='padding:2px 6px 2px 20px;'>• 命轮（60/次）：可保底 <b>" + pityWheel + "</b> 次</td></tr>";
+            tableHTML += "<tr><td colspan='3' style='padding:2px 6px 2px 20px;'>• 组合（1唤醒体+1命轮，共150流明之芯）：可保底 <b>" + Math.min(pityAwaken, pityWheel) + "</b> 组</td></tr>";
+
+            tableHTML += "</tbody></table>";
+
+            var storageKey = 'cp_table_collapsed';
+            var storedCollapsed = localStorage.getItem(storageKey);
+            var isCollapsed = (storedCollapsed === 'true');
+
+            var toggleBtnHTML =
+                "<button class='cp-table-toggle' id='cpTableToggle'>" + (isCollapsed ? "展开明细" : "收起明细") +
+                "</button>";
+            var containerClass = "cp-table-container" + (isCollapsed ? " collapsed" : "");
+
+            var resultHTML =
+                "<div class='cp-result'>" +
+                "<h3>计算结果</h3>" +
+                "<div class='cp-result-headline'>" + silverHTML + "</div>" +
+                "<div class='cp-result-headline'>" + pureHTML + "</div>" +
+                toggleBtnHTML +
+                "<div class='" + containerClass + "' id='cpTableContainer'>" + tableHTML + "</div>" +
+                "<div class='cp-note'>※ 明细中的数值根据达成天数动态截取，未达成的活动不计。<br>一次性付费项目按填写总量一次性计算。<br>优先计算氪金内容。</div>" +
+                "<div class='cp-result-btn-row'>" +
+                "<button class='cp-calc-btn' id='cpCalcBtnBottom'>开始计算</button>" +
+                "<button class='cp-reset-btn' id='cpResetBtnBottom'>全部重置</button>" +
+                "</div>" +
+                "</div>";
+
+            $("cpResult").innerHTML = resultHTML;
+
+            // 重新绑定事件
+            var toggle = document.getElementById("cpTableToggle");
+            var container = document.getElementById("cpTableContainer");
+            if (toggle && container) {
+                toggle.addEventListener("click", function() {
+                    var currentlyCollapsed = container.classList.contains("collapsed");
+                    if (currentlyCollapsed) {
+                        container.classList.remove("collapsed");
+                        toggle.textContent = "收起明细";
+                        localStorage.setItem(storageKey, 'false');
+                    } else {
+                        container.classList.add("collapsed");
+                        toggle.textContent = "展开明细";
+                        localStorage.setItem(storageKey, 'true');
+                    }
+                });
+            }
+
+            document.getElementById("cpCalcBtnBottom").addEventListener("click", calculate);
+            document.getElementById("cpResetBtnBottom").addEventListener("click", function() {
+                if (confirm("确定要重置全部内容为初始状态吗？")) {
+                    resetAll();
+                }
+            });
+        }
+
+        // ===== 重置 =====
+        function resetAll() {
+            ["cpTargetSilver", "cpCurrentSilver", "cpTargetLumen", "cpCurrentLumen", "cpTargetPure",
+                "cpCurrentPure"
+            ].forEach(function(id) { $(id).value = 0; });
+            ["cpAdjustSilver", "cpAdjustLumen", "cpAdjustPure"].forEach(function(id) { $(id).value = 0; });
+
+            $("cpShop").checked = true;
+            $("cpDailyTrial").checked = true;
+            $("cpCourseBuy").checked = false;
+            $("cpCourseDays").value = 28;
+            $("cpMonthlyCard").checked = false;
+            $("cpMonthlyCardDays").value = 30;
+            toggleCourseVisibility();
+            updateMonthlyCost();
+            updateCourseCost();
+
+            $("cpWeeklyTrial").checked = true;
+            $("cpWeeklyInstant").checked = false;
+
+            $("cpTrainValue").value = "10";
+            $("cpTrainCount").value = 0;
+            $("cpTrainInstant").checked = false;
+
+            ["cpMode1Seasons", "cpMode2Seasons", "cpMode3Seasons", "cpMode4Seasons"].forEach(function(id) { $(id)
+                    .value = 0; });
+            ["cpMode1Instant", "cpMode2Instant", "cpMode3Instant", "cpMode4Instant"].forEach(function(id) { $(id)
+                    .checked = false; });
+
+            $("cpNormalEventCount").value = 0;
+            $("cpNormalEventInstant").checked = false;
+            $("cpNormalEventSilver").value = 900;
+            $("cpEventPeriod").value = 28;
+            $("cpEventStartDay1").checked = false;
+            $("cpEventClaimDays").value = 0;
+            $("cpEventConcurrent").value = 1;
+            $("cpJourneyEventPure").value = 0;
+            $("cpCodeCount").value = 0;
+
+            $("cpBPNormal28").value = 0;
+            $("cpBPAdvanced28").value = 0;
+            $("cpBPMaxed28").value = 0;
+            $("cpBPInstant28").checked = false;
+            $("cpBPMaxed28Gift").checked = false;
+
+            $("cpBPNormal14").value = 0;
+            $("cpBPAdvanced14").value = 0;
+            $("cpBPMaxed14").value = 0;
+            $("cpBPInstant14").checked = false;
+            $("cpBPMaxed14Gift").checked = false;
+
+            $("cpMonthlyRefresh").checked = false;
+            $("cpRefreshLumenCount").value = 5;
+            $("cpRefreshPureCount").value = 5;
+
+            $("cpPreorderCycles").value = 0;
+            $("cpPreorderBuyCount").value = 0;
+            document.getElementById("cpPreorderCooldownCustom").value = 40;
+            $("cpDestinyJoin").checked = false;
+            $("cpDestinyPeriod").value = "28";
+            $("cpDestinyJoinPeriods").value = 0;
+            $("cpDestinyBuyCount").value = 0;
+            $("cpDestinyInstant").checked = false;
+            $("cpPopup60Count").value = 0;
+            $("cpPopup120Count").value = 0;
+            $("cpPopup180Count").value = 0;
+            $("cpPopupInstant").checked = false;
+            $("cpShopPack1").checked = false;
+            $("cpShopPack1Months").value = 0;
+            $("cpShopPack2").checked = false;
+            $("cpShopPack2Months").value = 0;
+            $("cpShopPack3").checked = false;
+            $("cpShopPack3Months").value = 0;
+            $("cpShopPackInstant").checked = false;
+            $("cpSecretCount").value = 0;
+            $("cpSecretAdvancedCount").value = 0;
+            $("cpLumenSupplyBuy").checked = false;
+
+            $("cpCustomContainer").innerHTML = "";
+
+            updatePreorderCooldown();
+
+            $("cpResult").innerHTML =
+                "<div class='cp-result' style='border-color:var(--bg-inner);'>" +
+                "<h3>计算结果</h3>" +
+                "<div style='opacity:0.6; font-size:13px;'>点击下方按钮进行计算</div>" +
+                "<div class='cp-result-btn-row'>" +
+                "<button class='cp-calc-btn' id='cpCalcBtnTop'>开始计算</button>" +
+                "<button class='cp-reset-btn' id='cpResetBtnTop'>全部重置</button>" +
+                "</div>" +
+                "</div>";
+
+            document.getElementById("cpCalcBtnTop").addEventListener("click", calculate);
+            document.getElementById("cpResetBtnTop").addEventListener("click", function() {
+                if (confirm("确定要重置全部内容为初始状态吗？")) {
+                    resetAll();
+                }
+            });
+
+            toggleRefreshVisibility();
+            clampBP();
+        }
+
+        // ===== 绑定事件 =====
+        document.getElementById("cpCalcBtnTop").addEventListener("click", calculate);
+        document.getElementById("cpResetBtnTop").addEventListener("click", function() {
+            if (confirm("确定要重置全部内容为初始状态吗？")) {
+                resetAll();
+            }
+        });
+
+        window.addEventListener("DOMContentLoaded", function() {
+            clampBP();
+            updateMonthlyCost();
+            updateCourseCost(); 
+            updatePreorderCooldown();
+            document.getElementById("cpCalcBtnTop").addEventListener("click", calculate);
+            document.getElementById("cpResetBtnTop").addEventListener("click", function() {
+                if (confirm("确定要重置全部内容为初始状态吗？")) {
+                    resetAll();
+                }
+            });
+        });
+
+    })();
+</script>
