@@ -2,6 +2,13 @@
 /*有参考暖暖环游世界wiki https://nikkiup2u.huijiwiki.com/wiki/Html:Carddrawingplanner
 明日方舟一图流 https://ark.yituliu.cn/*/
     /* ===== 全局变量 & 基础 ===== */
+
+    html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent !important; 
+    overflow: hidden;
+    }
     .core-planner-wrap {
         --main-base: #efefef;
         --bg: #11111180;
@@ -290,6 +297,7 @@
         border-collapse: collapse;
         font-size: 12px;
         margin-bottom: 12px;
+        color: var(--sub-a);
     }
     .cp-breakdown-table th {
         text-align: left;
@@ -300,6 +308,7 @@
     .cp-breakdown-table td {
         padding: 5px 6px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--sub-a);
     }
     .cp-breakdown-table tr.cp-total td {
         font-weight: bold;
