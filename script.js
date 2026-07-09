@@ -162,6 +162,7 @@
 
         var st = {
             shopSilver: 0,
+            missionSilver: 0,
             dailyTrialSilver: 0,
             dailyTrialPure: 0,
             weeklySilver: 0,
@@ -468,7 +469,7 @@
         processInstantRewards();
 
         // 检查目标是否已达成
-        var currentSE = cSE + st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver +
+        var currentSE = cSE + st.shopSilver + st.missionSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver +
             st.trainSilver + st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen *
                 LUMEN_RATE) +
             st.codeSilver +
@@ -504,6 +505,7 @@
             day++;
 
             if (config.hasShop && !seDone) st.shopSilver += 20;
+            if (config.hasMission && !seDone) st.missionSilver += 20;
 
             if (config.hasDaily) {
                 if (!seDone) st.dailyTrialSilver += 60;
@@ -772,7 +774,7 @@
                 }
             }
 
-            var currentSE2 = cSE + st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver +
+            var currentSE2 = cSE + st.shopSilver + st.missionSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver +
                 st.trainSilver + st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen *
                     LUMEN_RATE) +
                 st.codeSilver +
@@ -854,6 +856,7 @@
 
         var config = {
             hasShop: checked("cpShop"),
+            hasMission: checked("cpMissionSilver"),
             hasDaily: checked("cpDailyTrial"),
             hasCourse: checked("cpCourseBuy"),
             maxCourseDays: num("cpCourseDays"),
@@ -946,7 +949,7 @@
         var silverHTML;
         if (!hasTargetSE) {
             var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
-                res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
+                res.stats.shopSilver + res.stats.missionSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
                 res.stats.weeklySilver + res.stats.trainSilver + res.stats.modeSilver +
                 res.stats.refreshSilver + res.stats.eventSilver + (res.stats.eventLumen * LUMEN_RATE) +
                 res.stats.codeSilver +
@@ -968,7 +971,7 @@
                 "</b> 流明之芯）";
         } else if (res.daySE === 0) {
             var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
-                res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
+                res.stats.shopSilver + res.stats.missionSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
                 res.stats.weeklySilver + res.stats.trainSilver + res.stats.modeSilver +
                 res.stats.refreshSilver + res.stats.eventSilver + (res.stats.eventLumen * LUMEN_RATE) +
                 res.stats.codeSilver +
@@ -987,7 +990,7 @@
             silverHTML = "银芯与流明之芯：<b>已有足够数量</b>！合计拥有预测：<b>" + fmt(totalSE) + "</b> 银芯数量";
         } else if (res.daySE === -1) {
             var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
-                res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
+                res.stats.shopSilver + res.stats.missionSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
                 res.stats.weeklySilver + res.stats.trainSilver + res.stats.modeSilver +
                 res.stats.refreshSilver + res.stats.eventSilver + (res.stats.eventLumen * LUMEN_RATE) +
                 res.stats.codeSilver +
@@ -1007,7 +1010,7 @@
                 "</b> 银芯数量）";
         } else {
             var totalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
-                res.stats.shopSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
+                res.stats.shopSilver + res.stats.missionSilver + res.stats.dailyTrialSilver + res.stats.monthlySilver +
                 res.stats.weeklySilver + res.stats.trainSilver + res.stats.modeSilver +
                 res.stats.refreshSilver + res.stats.eventSilver + (res.stats.eventLumen * LUMEN_RATE) +
                 res.stats.codeSilver +
@@ -1070,7 +1073,7 @@
         var st = res.stats;
 
         var finalSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
-            st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver + st.trainSilver +
+            st.shopSilver + st.missionSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver + st.trainSilver +
             st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen * LUMEN_RATE) +
             st.codeSilver +
             st.bp28Silver + (st.bp28Lumen * LUMEN_RATE) + st.bp14Silver + (st.bp14Lumen * LUMEN_RATE) +
@@ -1105,6 +1108,9 @@
 
         if (st.shopSilver > 0) tableHTML +=
             "<tr><td>每日·商店每日常规补助</td><td>" + fmt(st.shopSilver) + "</td><td>0</td></tr>";
+
+        if (st.missionSilver > 0) tableHTML +=
+            "<tr><td>每日·派遣</td><td>" + fmt(st.missionSilver) + "</td><td>0</td></tr>";
 
         if (st.dailyTrialSilver > 0 || st.dailyTrialPure > 0) {
             var activatedCourseDays = Math.min(res.daySE > 0 ? res.daySE : 0, config.maxCourseDays);
@@ -1272,7 +1278,7 @@
         var totalPaidPure = st.destinyPure + st.popupPure + st.secretPure;
 
         var totalEarnedSE = cSilver + cLumen * LUMEN_RATE + adjustSilver + adjustLumen * LUMEN_RATE +
-            st.shopSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver + st.trainSilver +
+            st.shopSilver + st.missionSilver + st.dailyTrialSilver + st.monthlySilver + st.weeklySilver + st.trainSilver +
             st.modeSilver + st.refreshSilver + st.eventSilver + (st.eventLumen * LUMEN_RATE) +
             totalCustomSE + st.codeSilver + totalBPSETotal + totalPaidSE +
             st.preorderFreeSilver;
@@ -1368,6 +1374,7 @@
         ["cpAdjustSilver", "cpAdjustLumen", "cpAdjustPure"].forEach(function(id) { $(id).value = 0; });
 
         $("cpShop").checked = true;
+        $("cpMissionSilver").checked = true;
         $("cpDailyTrial").checked = true;
         $("cpCourseBuy").checked = false;
         $("cpCourseDays").value = 28;
