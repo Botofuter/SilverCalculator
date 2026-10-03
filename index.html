@@ -179,6 +179,20 @@
                             <input type="number" id="cpEventConcurrent" min="1" value="1" style="width:60px;" />
                         </div>
 
+                        <div class="cp-subgroup-title">学园礼赠</div>
+                        <div class="cp-row">
+                            <label class="cp-main-label">参与周期数（每个周期：流明之芯×10）</label>
+                            <label>周期长度
+                                <select id="cpAcademyPeriod" style="width:80px;">
+                                    <option value="14">14天</option>
+                                    <option value="28" selected>28天</option>
+                                </select>
+                            </label>
+                            <label>周期数 <input type="number" id="cpAcademyPeriods" min="0" value="0" style="width:50px;" /></label>
+                            <label><input type="checkbox" id="cpAcademyInstant" /> 立即计算全部</label>
+                        </div>
+                        <div class="cp-hint">※ 每个周期提供流明之芯×10，按所选周期长度在模拟中逐期发放。</div>
+
                         <div class="cp-subgroup-title">纪行活动</div>
                         <div class="cp-row">
                             <label class="cp-main-label">纪行活动预估无垢之芯总量</label>

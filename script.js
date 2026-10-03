@@ -203,6 +203,8 @@
             destinyLumen: 0,
             destinyPure: 0,
             destinyCyclesActual: 0,
+            academyLumen: 0,
+            academyCyclesActual: 0,
             popupSilver: 0,
             popupLumen: 0,
             popupPure: 0,
@@ -280,6 +282,10 @@
         var destinyJoinPeriods = config.destinyJoinPeriods || 0;
         var destinyBuyCount = config.destinyBuyCount || 0;
         var destinyInstant = config.destinyInstant || false;
+
+        var academyPeriod = parseInt(config.academyPeriod) || 28;
+        var academyPeriods = config.academyPeriods || 0;
+        var academyInstant = config.academyInstant || false;
 
         var popupQueue = [];
         var c60 = config.popup60Count || 0;
@@ -417,6 +423,11 @@
             st.preorderCyclesActual = preorderCycles;
 
             st.journeyPure += config.journeyPure;
+
+            if (academyInstant && academyPeriods > 0) {
+                st.academyLumen += 10 * academyPeriods;
+                st.academyCyclesActual = academyPeriods;
+            }
 
             if (config.popupInstant && popupQueueCopy.length > 0) {
                 var tempQueue = popupQueueCopy.slice();
@@ -713,6 +724,16 @@
                 }
             }
 
+            if (!academyInstant && academyPeriods > 0) {
+                for (var ap = 0; ap < academyPeriods; ap++) {
+                    var aStart = ap * academyPeriod + 1;
+                    if (day === aStart) {
+                        if (!seDone) st.academyLumen += 10;
+                        st.academyCyclesActual++;
+                    }
+                }
+            }
+
             if (popupQueueCopy.length > 0 && !config.popupInstant) {
                 if (day % 3 === 0 && day > 0) {
                     var tier = popupQueueCopy.shift();
@@ -782,6 +803,7 @@
                 st.preorderSilver + (st.preorderLumen * LUMEN_RATE) +
                 st.preorderFreeSilver +
                 (st.destinyLumen * LUMEN_RATE) +
+                (st.academyLumen * LUMEN_RATE) +
                 st.popupSilver + (st.popupLumen * LUMEN_RATE) +
                 (st.shopPackLumen * LUMEN_RATE) +
                 st.secretSilver + st.secretAdvSilver + (st.secretAdvLumen * LUMEN_RATE) +
@@ -887,6 +909,9 @@
             eventConcurrent: num("cpEventConcurrent") || 1,
             journeyPure: num("cpJourneyEventPure"),
             codeCount: num("cpCodeCount"),
+            academyPeriod: parseInt($("cpAcademyPeriod").value, 10) || 28,
+            academyPeriods: num("cpAcademyPeriods"),
+            academyInstant: checked("cpAcademyInstant"),
 
             bpNormal28: num("cpBPNormal28"),
             bpAdvanced28: num("cpBPAdvanced28"),
@@ -1174,7 +1199,13 @@
                 (groupStr.length > 0 ? "，" + groupStr.join("、") : "") + 
                 ")</td><td>" + fmt(totalEventSilver) + "</td><td>" + fmt(totalEventPure) + "</td></tr>";
         }
-
+        if (st.academyLumen > 0) {
+            var academyLabel = config.academyInstant
+                ? "(立即结算 " + st.academyCyclesActual + " 周期)"
+                : "(历经 " + st.academyCyclesActual + " 周期，每周期" + config.academyPeriod + "天)";
+            tableHTML += "<tr><td>学园礼赠 " + academyLabel + "</td><td>" + fmt(st.academyLumen * LUMEN_RATE) +
+                "</td><td>0</td></tr>";
+        }
         if (st.codeSilver > 0 || st.codePure > 0) tableHTML += "<tr><td>兑换码收益</td><td>" + fmt(st.codeSilver) +
             "</td><td>" + fmt(st.codePure) + "</td></tr>";
         if (st.journeyPure > 0) tableHTML += "<tr><td>纪行无垢之芯总量</td><td>0</td><td>" + fmt(st.journeyPure) +
@@ -1404,6 +1435,10 @@
         $("cpEventConcurrent").value = 1;
         $("cpJourneyEventPure").value = 0;
         $("cpCodeCount").value = 0;
+
+        $("cpAcademyPeriod").value = "28";
+        $("cpAcademyPeriods").value = 0;
+        $("cpAcademyInstant").checked = false;
 
         $("cpBPNormal28").value = 0;
         $("cpBPAdvanced28").value = 0;
