@@ -864,7 +864,7 @@
             maxMonthlyDays: num("cpMonthlyCardDays"),
             hasWeekly: checked("cpWeeklyTrial"),
             weeklyInstant: checked("cpWeeklyInstant"),
-            trainSilverPerHit: trainStops * 100,
+            trainSilverPerHit: trainStops * 300,
             trainCount: num("cpTrainCount"),
             trainInstant: checked("cpTrainInstant"),
             mode1Seasons: num("cpMode1Seasons"),
@@ -1387,7 +1387,7 @@
         $("cpWeeklyTrial").checked = true;
         $("cpWeeklyInstant").checked = false;
 
-        $("cpTrainValue").value = "10";
+        $("cpTrainValue").value = "9";
         $("cpTrainCount").value = 0;
         $("cpTrainInstant").checked = false;
 
